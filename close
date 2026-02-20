@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PRO9 DPAR SYSTEM - Storage Alert</title>
+    
+    <style>
+        :root {
+            --aws-orange: #ff9900;
+            --aws-blue: #232f3e;
+            --danger-red: #ec7211; /* AWS-style Warning Orange/Red */
+            --bg-dark: #010b1a;
+        }
+
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            background-color: var(--bg-dark); 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+        }
+
+        /* Amazon-style Card Container */
+        .alert-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .icon-container {
+            margin-bottom: 20px;
+        }
+
+        .storage-icon {
+            font-size: 50px;
+            color: var(--aws-orange);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        p {
+            color: #8b949e;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Storage Progress Bar */
+        .progress-container {
+            background: #30363d;
+            border-radius: 10px;
+            height: 10px;
+            width: 100%;
+            margin: 25px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #ff9900, #ec7211);
+            width: 100%; /* Full */
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .admin-box {
+            background: rgba(255, 153, 0, 0.1);
+            border: 1px border dashed var(--aws-orange);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .admin-label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--aws-orange);
+            margin-bottom: 5px;
+        }
+
+        .footer-brand {
+            margin-top: 30px;
+            font-size: 0.7rem;
+            color: #484f58;
+            border-top: 1px solid #30363d;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div class="alert-card">
+        <div class="icon-container">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ff9900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+        </div>
+
+        <h1>Storage Limit Reached</h1>
+        <p>The <strong>PRO9 DPAR System</strong> has exhausted its allocated cloud storage capacity. Data synchronization is currently suspended.</p>
+
+        <div class="progress-container">
+            <div class="progress-fill"></div>
+        </div>
+        <p style="font-size: 0.8rem; margin-top: -15px; color: var(--aws-orange);">100% Capacity Utilized</p>
+
+        <div class="admin-box">
+            <span class="admin-label">Required Action</span>
+            <p style="color: #fff; margin: 0;">Please contact <strong>System Administrator</strong> to upgrade storage or purge legacy logs.</p>
+        </div>
+
+        <div class="footer-brand">
+            PRO9 SECURE GATEWAY | Cloudfare
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ANTI-INSPECTION PROTECTION
+         */
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123 || 
+              (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
+              (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+                return false;
+            }
+        };
+    </script>
+</body>
+</html>
