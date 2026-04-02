@@ -5,163 +5,255 @@
     <link rel="icon" type="image/png" href="pro9 logo.png">
     <link rel="apple-touch-icon" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 TACTICAL | COMMAND HQ</title>
+    <title>PRO9 DPPAR SYSTEM | TACTICAL COMMAND</title>
     
     <style>
         :root {
-            --tactical-blue: #0749a0;
+            --tactical-blue: #0a84ff;
             --hud-green: #00ff41;
-            --bg-dark: #01060f;
-            --glass: rgba(1, 11, 26, 0.85);
+            --bg-dark: #010b1a;
+            --glass-bg: rgba(1, 11, 26, 0.85);
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
             overflow: hidden; background-color: var(--bg-dark); 
-            position: fixed; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: fixed; font-family: 'Segoe UI', Tahoma, sans-serif;
         }
 
-        /* --- BACKGROUND SATELLITE LAYER --- */
-        #map-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+        /* --- ROVING SATELLITE BACKGROUND --- */
+        #map-roving {
+            position: fixed;
+            top: -20%; left: -20%; 
+            width: 140%; height: 140%;
             background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center/cover no-repeat;
-            filter: brightness(0.3) contrast(1.2) hue-rotate(185deg) blur(2px);
+            filter: brightness(0.25) contrast(1.2) hue-rotate(185deg) saturate(0.5);
             z-index: 0;
-            transform: scale(1.1);
+            animation: rovingScan 80s linear infinite alternate;
+        }
+
+        @keyframes rovingScan {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-5%, -8%) scale(1.1); }
+            100% { transform: translate(3%, 4%) scale(1); }
         }
 
         /* HUD Grid Overlay */
-        .hud-overlay {
-            position: absolute;
+        .hud-grid {
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: 
-                radial-gradient(circle, transparent 20%, var(--bg-dark) 90%),
-                repeating-linear-gradient(rgba(7, 73, 160, 0.03) 0 1px, transparent 1px 40px),
-                repeating-linear-gradient(90deg, rgba(7, 73, 160, 0.03) 0 1px, transparent 1px 40px);
+                radial-gradient(circle at center, transparent 30%, var(--bg-dark) 100%),
+                repeating-linear-gradient(rgba(10, 132, 255, 0.03) 0 1px, transparent 1px 50px),
+                repeating-linear-gradient(90deg, rgba(10, 132, 255, 0.03) 0 1px, transparent 1px 50px);
             z-index: 1; pointer-events: none;
         }
 
-        /* --- ENTRANCE ANIMATION (THUNDER SLAM) --- */
+        /* --- TACTICAL ENTRANCE LOADER --- */
         #loader {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: #000; display: flex; align-items: center;
             justify-content: center; z-index: 9999;
-            transition: opacity 0.8s ease;
+            transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .entrance-content {
+            text-align: center;
+            animation: impactPulse 2s infinite ease-in-out;
         }
 
         .logo-impact {
-            width: 180px;
-            filter: drop-shadow(0 0 30px var(--tactical-blue));
-            animation: thunderStrike 0.5s cubic-bezier(0.17, 0.88, 0.32, 1.5) forwards;
+            width: 160px;
+            filter: drop-shadow(0 0 40px var(--tactical-blue));
+            animation: slam 0.5s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
         }
 
-        @keyframes thunderStrike {
-            0% { transform: scale(8); opacity: 0; filter: brightness(20) blur(20px); }
+        @keyframes slam {
+            0% { transform: scale(5); opacity: 0; filter: brightness(10); }
             100% { transform: scale(1); opacity: 1; filter: brightness(1); }
         }
 
-        /* --- THE FITTED FORM (COMMAND CONSOLE) --- */
-        .console-container {
+        @keyframes impactPulse {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.02); filter: brightness(1.2); }
+        }
+
+        /* --- FITTED CONSOLE INTERFACE --- */
+        #console-window {
             position: absolute;
             top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            width: 95%; height: 90%;
-            max-width: 1600px;
+            transform: translate(-50%, -50%) scale(0.96);
+            width: 96%; height: 92%;
             z-index: 10;
             opacity: 0;
-            transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.8s cubic-bezier(0.2, 1, 0.2, 1);
             display: flex; flex-direction: column;
+            border: 1px solid rgba(10, 132, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
         }
 
-        .console-header {
-            background: var(--tactical-blue);
-            color: white;
-            padding: 8px 20px;
-            font-size: 0.7rem;
-            letter-spacing: 3px;
-            display: flex; justify-content: space-between;
-            border-radius: 4px 4px 0 0;
-            box-shadow: 0 -5px 15px rgba(7, 73, 160, 0.3);
+        #console-window.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
+
+        /* Fullscreen State */
+        #console-window.fullscreen-mode {
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 0;
+            border: none;
+        }
+
+        .header-bar {
+            background: rgba(10, 132, 255, 0.15);
+            backdrop-filter: blur(15px);
+            padding: 12px 25px;
+            display: flex; justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(10, 132, 255, 0.3);
+        }
+
+        .btn-toggle {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--tactical-blue);
+            color: #fff;
+            font-size: 9px;
+            padding: 5px 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .btn-toggle:hover { background: var(--tactical-blue); }
 
         #secure-frame {
-            flex-grow: 1;
+            flex: 1;
             width: 100%;
-            border: 1px solid rgba(7, 73, 160, 0.4);
-            border-top: none;
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border-radius: 0 0 4px 4px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: none;
         }
 
-        /* Boot Text */
-        .boot-status {
+        /* Scanning Metadata Overlay */
+        .scan-data {
             position: absolute;
-            bottom: 20px; left: 20px;
+            bottom: 25px; left: 25px;
             color: var(--hud-green);
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.65rem;
-            z-index: 100;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            line-height: 1.5;
+            z-index: 5;
+            pointer-events: none;
             text-shadow: 0 0 5px var(--hud-green);
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
+    <div id="map-roving"></div>
+    <div class="hud-grid"></div>
+
     <div id="loader">
-        <img src="pro9 logo.png" alt="PRO9" class="logo-impact">
+        <div class="entrance-content">
+            <img src="pro9 logo.png" alt="PRO9" class="logo-impact">
+            <p style="color: #fff; font-size: 0.8rem; letter-spacing: 4px; margin-top: 20px;">NAVIGATING SECTOR IX...</p>
+            <p style="color: var(--tactical-blue); font-size: 0.6rem;">SECURE UPLINK ESTABLISHED</p>
+        </div>
     </div>
 
-    <div id="map-bg"></div>
-    <div class="hud-overlay"></div>
-
-    <div class="console-container" id="console">
-        <div class="console-header">
-            <span>TERMINAL A-09 // ZAMBOANGA PENINSULA COMMAND</span>
-            <span id="live-clock">00:00:00</span>
+    <div id="console-window">
+        <div class="header-bar">
+            <div style="color: var(--tactical-blue); font-size: 11px; font-weight: bold; letter-spacing: 2px;">
+                DPPAR SYSTEM // REGION IX COMMAND
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div id="clock" style="color: white; font-family: monospace; font-size: 13px;">00:00:00</div>
+                <button class="btn-toggle" onclick="toggleFullScreen()">Maximize View</button>
+            </div>
         </div>
         <iframe 
             id="secure-frame"
-            src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
-            onload="startSystem()">
+            src="https://script.google.com/macros/s/AKfycbzq5aWj56E8BhCov5DdEwbn5jYGxbPSKMxy8YkZQateINb-pc4Nk6nj-ZgnEE3sb43WNg/exec?p=index" 
+            allowfullscreen
+            onload="launchSystem()">
         </iframe>
     </div>
 
-    <div class="boot-status" id="boot-log">
-        >> INITIALIZING SATELLITE UPLINK...<br>
-        >> LOCATION: ZAMBOANGA_PENINSULA (REGION IX)<br>
-        >> ENCRYPTION: AES-256 ACTIVE
+    <div class="scan-data">
+        >> SECTOR: ZAMBO_PENINSULA_SULU<br>
+        >> SCAN_STATUS: ROVING_ACTIVE<br>
+        >> <span id="coords">LAT: 7.5085 | LNG: 122.0792</span>
     </div>
 
     <script>
-        function startSystem() {
+        /**
+         * INITIALIZATION & LAUNCH
+         */
+        function launchSystem() {
             setTimeout(() => {
-                // Fade out loader
-                document.getElementById('loader').style.opacity = '0';
+                const loader = document.getElementById('loader');
+                const consoleWin = document.getElementById('console-window');
                 
-                // Show Fitted Console
-                const console = document.getElementById('console');
-                console.style.opacity = '1';
-                console.style.transform = 'translate(-50%, -50%) scale(1)';
+                loader.style.opacity = '0';
+                consoleWin.classList.add('active');
                 
                 setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                }, 800);
-            }, 1500);
+                    loader.style.display = 'none';
+                }, 1000);
+            }, 2000);
         }
 
-        // Live HUD Clock
+        /**
+         * FULLSCREEN TOGGLE LOGIC
+         */
+        function toggleFullScreen() {
+            const el = document.getElementById('console-window');
+            el.classList.toggle('fullscreen-mode');
+            
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        /**
+         * LIVE HUD & CLOCK
+         */
         setInterval(() => {
             const now = new Date();
-            document.getElementById('live-clock').innerText = now.toLocaleTimeString();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
+            
+            // Random coordinate drift for tactical feel (Region IX to Sulu)
+            const lat = (6.0 + (Math.random() * 2.5)).toFixed(4);
+            const lng = (120.2 + (Math.random() * 3.5)).toFixed(4);
+            document.getElementById('coords').innerText = `LAT: ${lat} | LNG: ${lng}`;
         }, 1000);
 
-        // Security Lock
-        document.onkeydown = (e) => {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) return false;
+        /**
+         * SECURITY & AUTO-RELOAD (30 MINS IDLE)
+         * Authorized by: Elizer T Garingo (Cyber Sec IV)
+         */
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123 || 
+              (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
+              (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+                return false;
+            }
         };
+
+        let idleTime = 0;
+        document.onmousemove = document.onkeypress = document.ontouchstart = () => idleTime = 0;
+        setInterval(() => {
+            idleTime++;
+            if (idleTime >= 30) window.location.reload();
+        }, 60000);
     </script>
 </body>
 </html>
