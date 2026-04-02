@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="LOGO.png">
+    <link rel="apple-touch-icon" href="LOGO.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PRO9 DPPAR SYSTEM</title>
+    
+    <style>
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            overflow: hidden; background-color: #010b1a; 
+            position: fixed; font-family: 'Segoe UI', sans-serif;
+        }
+        iframe {
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; border: none;
+            -webkit-overflow-scrolling: touch;
+            z-index: 1;
+        }
+
+        /* LIGHTNING ENTRANCE STYLES */
+        #loader {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #010b1a; display: flex; align-items: center;
+            justify-content: center; z-index: 99;
+        }
+
+        .lightning-container {
+            position: relative;
+            text-align: center;
+        }
+
+        /* The Logo Animation */
+        .thunder-logo {
+            width: 120px; /* Adjust size as needed */
+            height: auto;
+            filter: drop-shadow(0 0 10px #fff);
+            animation: thunderStrike 0.4s ease-out forwards;
+            opacity: 0;
+        }
+
+        /* Lightning Flash Effect */
+        .flash {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+            animation: globalFlash 0.5s ease-out;
+        }
+
+        /* Blue Electric Glow */
+        .electric-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, rgba(7,73,160,0.8) 0%, rgba(1,11,26,0) 70%);
+            border-radius: 50%;
+            animation: pulseGlow 0.2s infinite alternate;
+        }
+
+        @keyframes thunderStrike {
+            0% { transform: scale(5); opacity: 0; filter: brightness(10) blur(10px); }
+            20% { opacity: 1; filter: brightness(5) blur(2px); }
+            100% { transform: scale(1); opacity: 1; filter: brightness(1) drop-shadow(0 0 15px #0749a0); }
+        }
+
+        @keyframes globalFlash {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            20% { opacity: 0; }
+            30% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes pulseGlow {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+            to { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+
+        .text-reveal {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            color: #fff;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid #0749a0;
+            width: 0;
+            animation: typeText 1s steps(20) forwards;
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typeText {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="loader">
+        <div class="flash"></div> <div class="lightning-container">
+            <div class="electric-glow"></div>
+            <img src="LOGO.png" alt="LOGO" class="thunder-logo">
+            <p class="text-reveal">PRO9 SECURE GATEWAY</p>
+            <p style="font-size: 0.6rem; color: #0749a0; margin-top: 5px;">DPAR9 | Authorized Access Only</p>
+        </div>
+    </div>
+
+    <iframe 
+        id="secure-frame"
+        src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
+        allowfullscreen
+        onload="setTimeout(() => { document.getElementById('loader').style.display='none'; }, 1500);">
+    </iframe>
+
+    <script>
+        // ANTI-INSPECTION & BYPASS PROTECTION
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123 || 
+              (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
+              (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+                return false;
+            }
+        };
+
+        // IDLE LOGOUT PROTOCOL (30 MINUTES)
+        let idleTime = 0;
+        const IDLE_LIMIT = 30; 
+
+        function resetTimer() { idleTime = 0; }
+        window.onmousemove = resetTimer;
+        window.onkeypress = resetTimer;
+        window.ontouchstart = resetTimer;
+
+        setInterval(function() {
+            idleTime++;
+            if (idleTime >= IDLE_LIMIT) { 
+                window.location.reload(); 
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
