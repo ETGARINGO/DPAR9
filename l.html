@@ -5,153 +5,133 @@
     <link rel="icon" type="image/png" href="pro9 logo.png">
     <link rel="apple-touch-icon" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 TACTICAL COMMAND | ZAMBOANGA PENINSULA</title>
+    <title>PRO9 DPPAR SYSTEM | TACTICAL ENTRANCE</title>
     
     <style>
-        :root {
-            --tactical-blue: #0749a0;
-            --warning-red: #ff3b3b;
-            --hud-green: #00ff41;
-            --bg-dark: #010b1a;
-        }
-
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: var(--bg-dark); 
-            position: fixed; font-family: 'Share Tech Mono', monospace;
+            overflow: hidden; background-color: #010b1a; 
+            position: fixed; font-family: 'Courier New', Courier, monospace;
         }
-
-        /* --- MILITARY HUD MAP CONTAINER --- */
-        #map-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+        
+        iframe {
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; border: none;
             z-index: 1;
-            filter: brightness(0.8) contrast(1.2) hue-rotate(180deg) saturate(0.5); /* Military Blue Filter */
         }
 
-        /* Tactical Overlay Grids */
-        .hud-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: 
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-                repeating-linear-gradient(90deg, rgba(7, 73, 160, 0.05) 0px, rgba(7, 73, 160, 0.05) 1px, transparent 1px, transparent 50px),
-                repeating-linear-gradient(0deg, rgba(7, 73, 160, 0.05) 0px, rgba(7, 73, 160, 0.05) 1px, transparent 1px, transparent 50px);
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        /* --- WAR ENTRANCE LOADER --- */
+        /* --- TACTICAL MAP LOADER --- */
         #loader {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #000; display: flex; align-items: center;
-            justify-content: center; z-index: 999;
+            background: #000;
+            display: flex; align-items: center;
+            justify-content: center; z-index: 99;
+            overflow: hidden;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        /* Map Background for Entrance Only */
+        .map-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.4;
+            filter: grayscale(1) contrast(1.5) brightness(0.5) sepia(100%) hue-rotate(190deg) saturate(3);
+            pointer-events: none;
+            transform: scale(1.2);
+            animation: mapZoom 3s ease-out forwards;
+        }
+
+        @keyframes mapZoom {
+            from { transform: scale(1.4); }
+            to { transform: scale(1); }
+        }
+
+        /* Scanline HUD Overlay */
+        #loader::after {
+            content: "";
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 100; pointer-events: none;
+        }
+
+        .war-container {
+            position: relative;
+            text-align: center;
+            z-index: 101;
+            animation: screenShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            animation-delay: 0.2s;
         }
 
         .military-logo {
-            width: 160px;
-            filter: drop-shadow(0 0 30px var(--tactical-blue));
-            animation: impactSlam 0.4s cubic-bezier(0.17, 0.88, 0.32, 1.28) forwards;
+            width: 150px;
             opacity: 0;
+            filter: drop-shadow(0 0 20px #0749a0);
+            animation: logoSlam 0.3s ease-out forwards;
+            animation-delay: 0.2s;
         }
 
-        @keyframes impactSlam {
-            0% { transform: scale(5); opacity: 0; filter: brightness(10) blur(20px); }
-            80% { transform: scale(0.9); opacity: 1; }
+        .crosshair {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px; height: 300px;
+            border: 1px solid rgba(7, 73, 160, 0.3);
+            border-radius: 50%;
+            animation: rotateHUD 6s linear infinite;
+        }
+
+        @keyframes logoSlam {
+            0% { transform: scale(4); opacity: 0; filter: brightness(10) blur(20px); }
             100% { transform: scale(1); opacity: 1; filter: brightness(1); }
         }
 
-        /* Map Navigation UI */
-        .map-ui {
-            position: absolute;
-            bottom: 20px; right: 20px;
-            z-index: 10;
-            color: var(--hud-green);
-            text-align: right;
-            text-shadow: 0 0 5px var(--hud-green);
-            pointer-events: none;
+        @keyframes rotateHUD {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .scan-line {
-            position: absolute;
-            width: 100%; height: 2px;
-            background: rgba(0, 255, 65, 0.1);
-            top: 0;
-            z-index: 3;
-            animation: scanning 4s linear infinite;
+        @keyframes screenShake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            30%, 70% { transform: translate3d(-5px, 0, 0); }
+            50% { transform: translate3d(5px, 0, 0); }
         }
 
-        @keyframes scanning {
-            0% { top: 0%; }
-            100% { top: 100%; }
-        }
-
-        /* Frame for System Apps */
-        #secure-frame {
-            position: absolute;
-            top: 10%; left: 5%;
-            width: 90%; height: 80%;
-            border: 1px solid var(--tactical-blue);
-            background: rgba(1, 11, 26, 0.8);
-            box-shadow: 0 0 20px rgba(7, 73, 160, 0.5);
-            z-index: 5;
-            display: none; /* Revealed after load */
-            backdrop-filter: blur(10px);
+        .status-text {
+            margin-top: 30px;
+            color: #00ff00;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 5px #00ff00;
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
     <div id="loader">
-        <img src="pro9 logo.png" alt="PRO9" class="military-logo">
-    </div>
-
-    <div id="map-container">
-        <iframe 
-            width="100%" height="100%" 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1012648.3425530182!2d121.0792345!3d7.508535!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3250419fd9f1f0d3%3A0x6735334e9e04818d!2sZamboanga%20Peninsula!5e1!3m2!1sen!2sph!4v1711111111111!5m2!1sen!2sph&dark_mode=true" 
-            style="border:0;" allowfullscreen="" loading="lazy">
-        </iframe>
-    </div>
-
-    <div class="hud-overlay"></div>
-    <div class="scan-line"></div>
-
-    <div class="map-ui">
-        <div>REGION IX COMMAND</div>
-        <div id="coords">LAT: 7.5085 | LNG: 122.0792</div>
-        <div style="font-size: 0.6rem;">SECTOR: ZAMBOANGA_PENINSULA</div>
+        <img class="map-bg" src="https://images.unsplash.com/photo-1526770146552-517a87756447?auto=format&fit=crop&q=80&w=2000" alt="Tactical Map">
+        
+        <div class="crosshair"></div>
+        
+        <div class="war-container">
+            <img src="pro9 logo.png" alt="PRO9" class="military-logo">
+            <p class="status-text">ACQUIRING REGION IX SIGNAL...</p>
+            <div style="width: 200px; height: 2px; background: rgba(7,73,160,0.3); margin: 10px auto; position: relative; overflow: hidden;">
+                <div style="position: absolute; width: 100%; height: 100%; background: #0749a0; animation: load 1.5s infinite;"></div>
+            </div>
+        </div>
     </div>
 
     <iframe 
         id="secure-frame"
         src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
-        onload="revealSystem()">
+        onload="setTimeout(() => { document.getElementById('loader').style.opacity='0'; setTimeout(()=>{document.getElementById('loader').style.display='none'}, 800); }, 2500);">
     </iframe>
 
     <script>
-        function revealSystem() {
-            setTimeout(() => {
-                document.getElementById('loader').style.transition = 'opacity 0.8s';
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('secure-frame').style.display = 'block';
-                }, 800);
-            }, 1500);
-        }
+        @keyframes load { 0% { left: -100%; } 100% { left: 100%; } }
 
-        // Random Coordinate Jitter for Tactical Feel
-        setInterval(() => {
-            const lat = (7.5085 + (Math.random() * 0.01)).toFixed(4);
-            const lng = (122.0792 + (Math.random() * 0.01)).toFixed(4);
-            document.getElementById('coords').innerText = `LAT: ${lat} | LNG: ${lng}`;
-        }, 2000);
-
-        // Security Scripts
-        document.onkeydown = (e) => {
+        document.onkeydown = function(e) {
             if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) return false;
         };
     </script>
