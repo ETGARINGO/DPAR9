@@ -5,169 +5,183 @@
     <link rel="icon" type="image/png" href="pro9 logo.png">
     <link rel="apple-touch-icon" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 DPPAR | REGIONAL SURVEILLANCE V10</title>
+    <title>PRO9 DPPAR SYSTEM | TACTICAL MAP</title>
     
     <style>
         :root {
-            --accent: #0a84ff;
-            --hud-green: #00ff41;
-            --warning: #ff3b30;
+            --tactical-blue: #0749a0;
+            --tactical-green: #00ff00;
+            --bg-dark: #010b1a;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: #000; 
-            position: fixed; font-family: 'Courier New', monospace;
+            overflow: hidden; background-color: var(--bg-dark); 
+            position: fixed; font-family: 'Courier New', Courier, monospace;
         }
 
-        /* --- WIDE-ANGLE SATELLITE DEPLOYMENT --- */
-        #map-viewport {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+        iframe {
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; border: none;
+            -webkit-overflow-scrolling: touch;
             z-index: 1;
-            filter: saturate(0.4) contrast(1.5) brightness(0.4) hue-rotate(190deg);
-            /* Focus: Camp Abendan, Zamboanga City */
-            transform: scale(5) translate(5%, 2%); 
-            transition: transform 4s cubic-bezier(0.15, 0.85, 0.35, 1);
+            opacity: 0;
+            transition: opacity 1s ease-in;
         }
 
-        #map-viewport.global-view {
-            /* Wide view including Sulu and Tawi-Tawi */
-            transform: scale(1) translate(0, 0);
-        }
-
-        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
-
-        /* --- LIGHTNING ARC --- */
-        #flash-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; opacity: 0; z-index: 10000; pointer-events: none;
-        }
-        .strike-sequence { animation: tacticalFlash 0.4s ease-out forwards; }
-        @keyframes tacticalFlash {
-            0% { opacity: 0; }
-            10% { opacity: 1; filter: contrast(2); }
-            30% { opacity: 0.1; }
-            50% { opacity: 0.8; }
-            100% { opacity: 0; }
-        }
-
-        /* --- COMMAND LOADER --- */
+        /* --- TACTICAL MAP LOADER --- */
         #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, transparent 0%, #000 80%);
-            display: flex; align-items: center; justify-content: center; z-index: 9999;
-            transition: opacity 0.6s ease;
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #000;
+            display: flex; align-items: center;
+            justify-content: center; z-index: 99;
+            overflow: hidden;
+            transition: opacity 0.8s ease-out;
         }
 
-        .logo-container { text-align: center; }
-        .logo-main {
-            width: 140px;
-            filter: drop-shadow(0 0 30px var(--accent));
-            animation: slamDown 0.5s cubic-bezier(0.15, 0.85, 0.35, 1.2) forwards;
-        }
-        @keyframes slamDown {
-            0% { transform: scale(6); opacity: 0; filter: brightness(10); }
-            100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+        /* Map Zoom Animation Container */
+        .map-wrapper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.4;
+            filter: hue-rotate(180deg) brightness(0.7); /* Adjust to match blue tactical theme */
+            animation: mapZoomIn 4s cubic-bezier(0.1, 0, 0.3, 1) forwards;
         }
 
-        /* --- TACTICAL CONSOLE --- */
-        #console-gate {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -48%) scale(0.94);
-            width: 98%; height: 95%; z-index: 20;
-            border: 1px solid rgba(0, 255, 65, 0.2);
-            opacity: 0; 
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            border-radius: 8px; overflow: hidden;
-            box-shadow: 0 0 100px rgba(0,0,0,0.95);
+        /* Scanline Overlay */
+        #loader::before {
+            content: " ";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 101; pointer-events: none;
         }
-        #console-gate.active { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        #form-feed { background: rgba(1, 11, 26, 0.8); backdrop-filter: blur(20px); pointer-events: auto; }
-
-        /* --- REGIONAL TELEMETRY HUD --- */
-        .telemetry-deck {
-            position: absolute; bottom: 25px; left: 25px; z-index: 30;
-            color: var(--hud-green); font-size: 11px; line-height: 1.5;
-            background: rgba(0, 10, 20, 0.6); padding: 10px;
-            border-left: 2px solid var(--hud-green);
-            opacity: 0; transform: translateY(10px);
-            transition: opacity 0.5s ease 2s, transform 0.5s ease 2s;
+        .war-container {
+            position: relative;
+            text-align: center;
+            z-index: 102;
         }
-        .telemetry-deck.active { opacity: 1; transform: translateY(0); }
+
+        .military-logo {
+            width: 120px;
+            filter: drop-shadow(0 0 20px var(--tactical-blue));
+            animation: logoPulse 2s infinite alternate;
+        }
+
+        /* Grid Overlay */
+        .grid-overlay {
+            position: absolute;
+            width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(rgba(7, 73, 160, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(7, 73, 160, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        /* KEYFRAMES */
+        @keyframes mapZoomIn {
+            0% { transform: scale(5); opacity: 0; }
+            20% { opacity: 0.4; }
+            100% { transform: scale(1.2); opacity: 0.2; }
+        }
+
+        @keyframes gridMove {
+            from { transform: translate(-25%, -25%); }
+            to { transform: translate(0, 0); }
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 10px var(--tactical-blue)); }
+            100% { transform: scale(1.05); filter: brightness(1.3) drop-shadow(0 0 25px var(--tactical-blue)); }
+        }
+
+        .status-text {
+            margin-top: 20px;
+            color: var(--tactical-green);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 8px var(--tactical-green);
+        }
+
+        .coord-text {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: var(--tactical-blue);
+            font-size: 0.6rem;
+            text-align: right;
+        }
+
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="flash-overlay"></div>
-    
-    <div id="map-viewport">
-        <iframe src="https://maps.google.com/?cid=15926670703505626648&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNl"></iframe>
-    </div>
-
     <div id="loader">
-        <div class="logo-container">
-            <img src="pro9 logo.png" class="logo-main">
-            <div id="boot-status" style="color: #fff; letter-spacing: 4px; font-size: 9px; margin-top: 20px;">SYNCING REGIONAL CHANNELS...</div>
+        <div class="grid-overlay"></div>
+        
+        <div class="map-wrapper">
+            <svg viewBox="0 0 800 600" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <path d="M200,400 Q250,350 300,380 T400,350 T500,400 T600,300 L700,450 L100,550 Z" 
+                      fill="none" stroke="#0749a0" stroke-width="2" />
+                <circle cx="350" cy="380" r="5" fill="#ff0000">
+                    <animate attributeName="r" values="3;8;3" dur="1s" repeatCount="indefinite" />
+                </circle>
+            </svg>
+        </div>
+
+        <div class="war-container">
+            <img src="pro9 logo.png" alt="PRO9" class="military-logo">
+            <p class="status-text" id="typewriter">ACQUIRING REGION IX SATELLITE FEED...</p>
+            <div style="width: 250px; height: 1px; background: var(--tactical-blue); margin: 10px auto;"></div>
+        </div>
+
+        <div class="coord-text">
+            LAT: 7.1315° N<br>LONG: 121.9500° E<br>SECURE LINK: ESTABLISHED
         </div>
     </div>
 
-    <div id="console-gate">
-        <iframe id="form-feed" src="https://script.google.com/macros/s/AKfycbzq5aWj56E8BhCov5DdEwbn5jYGxbPSKMxy8YkZQateINb-pc4Nk6nj-ZgnEE3sb43WNg/exec?p=index"></iframe>
-    </div>
-
-    <div class="telemetry-deck" id="hud">
-        [ SYSTEM ] ORBITAL_UPLINK_STABLE<br>
-        [ AREA ] ZAMBO_PENINSULA & SULU_ARCHIPELAGO<br>
-        [ COORDS ] <span id="dyn-pos">LAT: 6.9534 | LNG: 122.1301</span><br>
-        [ STATUS ] MONITORING_ACTIVE
-    </div>
+    <iframe 
+        id="secure-frame"
+        src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
+        allowfullscreen
+        onload="revealSystem()">
+    </iframe>
 
     <script>
-        /**
-         * TACTICAL REGIONAL DEPLOYMENT
-         * Optimized for Elizer T Garingo
-         */
-        window.addEventListener('load', () => {
-            const viewport = document.getElementById('map-viewport');
-            const flash = document.getElementById('flash-overlay');
-            const loader = document.getElementById('loader');
-            const consoleGate = document.getElementById('console-gate');
-            const hud = document.getElementById('hud');
-
-            // Sequential Launch
+        function revealSystem() {
+            const status = document.getElementById('typewriter');
+            status.innerText = "ACCESS GRANTED. INITIALIZING...";
+            
             setTimeout(() => {
-                // 1. Begin Satellite Ascent (Zoom Out)
-                viewport.classList.add('global-view');
-                
-                // 2. High-Voltage Pulse at Peak Ascent
+                document.getElementById('loader').style.opacity = '0';
+                document.getElementById('secure-frame').style.opacity = '1';
                 setTimeout(() => {
-                    flash.classList.add('strike-sequence');
-                    
-                    // 3. Deploy Command Console
-                    setTimeout(() => {
-                        loader.style.opacity = '0';
-                        consoleGate.classList.add('active');
-                        hud.classList.add('active');
-                        
-                        setTimeout(() => { loader.style.display = 'none'; }, 600);
-                    }, 100);
-                }, 1500);
-            }, 800);
-        });
+                    document.getElementById('loader').style.display = 'none';
+                }, 800);
+            }, 1500);
+        }
 
-        // Dynamic coordinate drifting for regional realism
-        setInterval(() => {
-            const lat = (5.8 + (Math.random() * 2.2)).toFixed(4);
-            const lng = (120.5 + (Math.random() * 2.5)).toFixed(4);
-            document.getElementById('dyn-pos').innerText = `LAT: ${lat} | LNG: ${lng}`;
-        }, 1500);
-
-        // Security Protocol
-        document.onkeydown = (e) => {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) return false;
+        // ANTI-INSPECTION
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+                return false;
+            }
         };
+
+        // IDLE RELOAD (30 Minutes)
+        let idleTime = 0;
+        document.onmousemove = document.onkeypress = () => { idleTime = 0; };
+        setInterval(() => {
+            idleTime++;
+            if (idleTime >= 30) window.location.reload();
+        }, 60000);
     </script>
 </body>
 </html>
