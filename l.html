@@ -3,185 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="pro9 logo.png">
-    <link rel="apple-touch-icon" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 DPPAR SYSTEM | TACTICAL MAP</title>
+    <title>PRO9 | DPPAR </title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         :root {
-            --tactical-blue: #0749a0;
-            --tactical-green: #00ff00;
-            --bg-dark: #010b1a;
+            --tactical-blue: #00d4ff;
+            --defense-green: #00ff66;
+            --bg-black: #00050a;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: var(--bg-dark); 
-            position: fixed; font-family: 'Courier New', Courier, monospace;
+            overflow: hidden; background-color: var(--bg-black); 
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        iframe {
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; border: none;
-            -webkit-overflow-scrolling: touch;
-            z-index: 1;
-            opacity: 0;
-            transition: opacity 1s ease-in;
-        }
-
-        /* --- TACTICAL MAP LOADER --- */
-        #loader {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #000;
-            display: flex; align-items: center;
-            justify-content: center; z-index: 99;
-            overflow: hidden;
-            transition: opacity 0.8s ease-out;
-        }
-
-        /* Map Zoom Animation Container */
-        .map-wrapper {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0.4;
-            filter: hue-rotate(180deg) brightness(0.7); /* Adjust to match blue tactical theme */
-            animation: mapZoomIn 4s cubic-bezier(0.1, 0, 0.3, 1) forwards;
-        }
-
-        /* Scanline Overlay */
-        #loader::before {
-            content: " ";
+        #map {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px;
-            z-index: 101; pointer-events: none;
+            z-index: 1;
+            filter: brightness(0.4) contrast(1.6) saturate(0.6) hue-rotate(185deg);
+            background: #000;
         }
 
-        .war-container {
-            position: relative;
-            text-align: center;
-            z-index: 102;
+        /* --- COMMAND HUD --- */
+        #hud {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+            transition: opacity 0.5s ease;
         }
 
-        .military-logo {
-            width: 120px;
-            filter: drop-shadow(0 0 20px var(--tactical-blue));
-            animation: logoPulse 2s infinite alternate;
+        .corner-bracket {
+            position: absolute; width: 40px; height: 40px;
+            border: 2px solid var(--tactical-blue);
+            opacity: 0.5;
+        }
+        .top-left { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
+        .top-right { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
+
+        .aor-header {
+            position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+            color: white; text-align: center; letter-spacing: 5px;
         }
 
-        /* Grid Overlay */
-        .grid-overlay {
-            position: absolute;
-            width: 200%; height: 200%;
-            background-image: 
-                linear-gradient(rgba(7, 73, 160, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(7, 73, 160, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridMove 20s linear infinite;
+        .status-box {
+            position: absolute; bottom: 40px; left: 40px;
+            color: var(--defense-green); font-family: monospace; font-size: 12px;
+            background: rgba(0,0,0,0.7); padding: 15px; border: 1px solid var(--defense-green);
         }
 
-        /* KEYFRAMES */
-        @keyframes mapZoomIn {
-            0% { transform: scale(5); opacity: 0; }
-            20% { opacity: 0.4; }
-            100% { transform: scale(1.2); opacity: 0.2; }
+        #secure-frame {
+            position: absolute; width: 100%; height: 100%; border: none;
+            z-index: 100; opacity: 0; display: none;
+            transition: opacity 0.8s ease-in;
         }
 
-        @keyframes gridMove {
-            from { transform: translate(-25%, -25%); }
-            to { transform: translate(0, 0); }
+        /* Rapid Expand Animation */
+        @keyframes expandShield {
+            from { stroke-dashoffset: 1000; opacity: 0; }
+            to { stroke-dashoffset: 0; opacity: 1; }
         }
-
-        @keyframes logoPulse {
-            0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 10px var(--tactical-blue)); }
-            100% { transform: scale(1.05); filter: brightness(1.3) drop-shadow(0 0 25px var(--tactical-blue)); }
-        }
-
-        .status-text {
-            margin-top: 20px;
-            color: var(--tactical-green);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 0 0 8px var(--tactical-green);
-        }
-
-        .coord-text {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: var(--tactical-blue);
-            font-size: 0.6rem;
-            text-align: right;
-        }
-
+        .shield-line { animation: expandShield 1.5s ease-out forwards; }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="loader">
-        <div class="grid-overlay"></div>
-        
-        <div class="map-wrapper">
-            <svg viewBox="0 0 800 600" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <path d="M200,400 Q250,350 300,380 T400,350 T500,400 T600,300 L700,450 L100,550 Z" 
-                      fill="none" stroke="#0749a0" stroke-width="2" />
-                <circle cx="350" cy="380" r="5" fill="#ff0000">
-                    <animate attributeName="r" values="3;8;3" dur="1s" repeatCount="indefinite" />
-                </circle>
-            </svg>
+    <div id="map"></div>
+
+    <div id="hud">
+        <div class="corner-bracket top-left"></div>
+        <div class="corner-bracket top-right"></div>
+
+        <div class="aor-header">
+            <h1 style="margin:0; font-size: 20px;">REGION IX</h1>
+            <div style="color: var(--tactical-blue); font-size: 10px;">DPPAR</div>
         </div>
 
-        <div class="war-container">
-            <img src="pro9 logo.png" alt="PRO9" class="military-logo">
-            <p class="status-text" id="typewriter">ACQUIRING REGION IX SATELLITE FEED...</p>
-            <div style="width: 250px; height: 1px; background: var(--tactical-blue); margin: 10px auto;"></div>
-        </div>
-
-        <div class="coord-text">
-            LAT: 7.1315° N<br>LONG: 121.9500° E<br>SECURE LINK: ESTABLISHED
+        <div class="status-box" id="stat-box">
+            > INITIALIZING SAT-LINK...<br>
+            > SCANNING JURISDICTIONS...<br>
+            > <span id="sync-pct">0%</span> ENCRYPTED
         </div>
     </div>
 
-    <iframe 
-        id="secure-frame"
-        src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
-        allowfullscreen
-        onload="revealSystem()">
+    <iframe id="secure-frame" 
+            src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
+            allow="fullscreen; geolocation; camera; microphone;"
+            onload="triggerAORZoom()">
     </iframe>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        function revealSystem() {
-            const status = document.getElementById('typewriter');
-            status.innerText = "ACCESS GRANTED. INITIALIZING...";
+        const jurisdictions = [
+            { name: "SULU", pos: [6.0, 121.0] },
+            { name: "ISABELA", pos: [6.7, 121.9] },
+            { name: "ZAMBO CITY", pos: [6.92, 122.07] },
+            { name: "SIBUGAY", pos: [7.7, 122.5] },
+            { name: "ZAMBO SUR", pos: [7.8, 123.3] },
+            { name: "ZAMBO NORTE", pos: [8.2, 123.0] }
+        ];
+
+        // Start Zoomed IN at HQ for a dramatic zoom-out
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([6.92, 122.07], 13);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+        async function triggerAORZoom() {
+            const syncPct = document.getElementById('sync-pct');
+            const statBox = document.getElementById('stat-box');
             
+            // 1. Zoom Out to view whole AOR (Fast)
+            map.flyTo([7.5, 122.3], 8, { duration: 1.5, easeLinearity: 0.1 });
+
+            // 2. Simultaneous Shield Activation
             setTimeout(() => {
-                document.getElementById('loader').style.opacity = '0';
-                document.getElementById('secure-frame').style.opacity = '1';
+                let coords = jurisdictions.map(j => j.pos);
+                
+                // Add All City Nodes
+                jurisdictions.forEach(j => {
+                    L.circleMarker(j.pos, {
+                        radius: 5, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1
+                    }).addTo(map).bindTooltip(j.name, {permanent: true, direction: 'top', className: 'tactical-label'});
+                });
+
+                // Draw Interlocked Polyline
+                L.polyline(coords, {
+                    color: '#00ff66', weight: 2, opacity: 0.8, dashArray: '10, 10'
+                }).addTo(map);
+
+                syncPct.innerText = "100%";
+                statBox.innerHTML += "<br>> SHIELD ACTIVE<br>> REDIRECTING...";
+            }, 800);
+
+            // 3. Final Transition
+            setTimeout(() => {
+                const frame = document.getElementById('secure-frame');
+                frame.style.display = "block";
+                frame.style.opacity = "1";
+                document.getElementById('hud').style.opacity = "0";
+                
                 setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                }, 800);
-            }, 1500);
+                    document.getElementById('map').style.display = "none";
+                }, 1000);
+            }, 2500);
         }
 
-        // ANTI-INSPECTION
-        document.onkeydown = function(e) {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
-                return false;
-            }
-        };
-
-        // IDLE RELOAD (30 Minutes)
-        let idleTime = 0;
-        document.onmousemove = document.onkeypress = () => { idleTime = 0; };
-        setInterval(() => {
-            idleTime++;
-            if (idleTime >= 30) window.location.reload();
-        }, 60000);
+        document.onkeydown = (e) => { if(e.keyCode == 123 || e.ctrlKey) return false; };
     </script>
 </body>
 </html>
