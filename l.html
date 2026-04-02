@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 DPPAR COMMAND TRACK / VALIDATOR</title>
+    <title>PRO9 | DPPAR ADMIN OVERDRIVE</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -12,130 +12,128 @@
         :root {
             --tactical-blue: #00d4ff;
             --defense-green: #00ff66;
-            --bg-black: #010b1a;
+            --bg-black: #000408;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
             overflow: hidden; background-color: var(--bg-black); 
-            position: fixed; font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', sans-serif;
         }
 
-        /* Tactical Map Background */
-        #map-bg {
+        #map {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; filter: brightness(0.5) contrast(1.6) saturate(0.4) hue-rotate(185deg);
+        }
+
+        #hud {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; filter: brightness(0.3) contrast(1.5) saturate(0.5) hue-rotate(180deg);
+            z-index: 10; pointer-events: none;
+            background: radial-gradient(circle, transparent 30%, rgba(0, 5, 10, 0.8) 100%);
+            transition: opacity 0.4s ease-out;
         }
 
-        /* Full-Screen Loader HUD */
-        #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, var(--bg-black) 100%);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 99; color: white; transition: opacity 0.8s ease;
+        .header-admin {
+            position: absolute; top: 20px; width: 100%; text-align: center;
+            color: white; letter-spacing: 12px; font-weight: 900;
+            text-shadow: 0 0 15px var(--tactical-blue);
         }
 
-        .hud-scan-line {
-            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: var(--tactical-blue); opacity: 0.3;
-            box-shadow: 0 0 15px var(--tactical-blue);
-            animation: scanMove 3s linear infinite;
+        /* --- HIGH VISIBILITY JURISDICTION LABELS --- */
+        .tactical-label {
+            background: rgba(0, 20, 40, 0.85) !important;
+            border: 1px solid var(--tactical-blue) !important;
+            color: #fff !important;
+            font-weight: 900 !important;
+            font-family: 'Courier New', monospace !important;
+            font-size: 11px !important;
+            padding: 2px 8px !important;
+            border-radius: 3px !important;
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+            text-transform: uppercase;
         }
 
-        @keyframes scanMove { 0% { top: 0%; } 100% { top: 100%; } }
-
-        .status-text {
-            text-align: center; letter-spacing: 3px; text-transform: uppercase;
+        /* Radar Pulse Animation */
+        @keyframes nodePulse {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        .pulse-ring {
+            border: 2px solid var(--defense-green);
+            border-radius: 50%;
+            animation: nodePulse 2s infinite;
         }
 
         #secure-frame {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border: none; z-index: 5; opacity: 0; display: none;
-            transition: opacity 1s ease;
-        }
-
-        /* Map Tooltip Style */
-        .tactical-label {
-            background: transparent !important; border: none !important;
-            color: var(--tactical-blue) !important; font-weight: bold !important;
-            font-family: monospace; font-size: 10px !important;
+            position: absolute; width: 100%; height: 100%; border: none;
+            z-index: 100; opacity: 0; visibility: hidden;
+            transition: opacity 0.5s ease-in;
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="map-bg"></div>
+    <div id="map"></div>
 
-    <div id="loader">
-        <div class="hud-scan-line"></div>
-        <div class="status-text">
-            <div style="border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--tactical-blue); border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s linear infinite; margin: 0 auto 20px;"></div>
-            <p style="font-size: 0.9rem; margin: 0;">DPPAR COMMAND TRACK</p>
-            <p id="load-msg" style="font-size: 0.6rem; color: var(--tactical-blue); margin-top: 5px;">INITIALIZING SECURE UPLINK...</p>
-        </div>
+    <div id="hud">
+        <div class="header-admin">DPPAR ADMIN</div>
     </div>
 
-    <iframe 
-        id="secure-frame"
-        src="https://script.google.com/macros/s/AKfycbwX5pbW0UYIKkaNSnZaN04VT5_hhhriSQLvHk9WaEz2-dr40l4QFeKHXpfmiQMwsATFiA/exec?p=admin" 
-        allow="fullscreen; geolocation; camera; microphone;"
-        onload="initCommandSequence()">
+    <iframe id="secure-frame" 
+            src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=admin" 
+            allow="fullscreen; geolocation; camera; microphone;"
+            onload="overdriveLaunch()">
     </iframe>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Start map at Regional Overview
-        const map = L.map('map-bg', { zoomControl: false, attributionControl: false }).setView([7.5, 122.5], 8);
+        const jurisdictions = [
+            { n: "SULU", p: [6.0, 121.0] },
+            { n: "ISABELA", p: [6.7, 121.9] },
+            { n: "ZAMBO", p: [6.92, 122.07] },
+            { n: "SIBUGAY", p: [7.7, 122.5] },
+            { n: "ZAMBO SUR", p: [7.8, 123.3] },
+            { n: "ZAMBO NORTE", p: [8.2, 123.0] }
+        ];
+
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([6.92, 122.07], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-        function initCommandSequence() {
-            const msg = document.getElementById('load-msg');
-            const loader = document.getElementById('loader');
+        function overdriveLaunch() {
             const frame = document.getElementById('secure-frame');
+            const hud = document.getElementById('hud');
 
-            // 1. Update UI
-            msg.innerText = "VALIDATING JURISDICTION...";
+            // Deploy VISIBLE nodes and pulse effects
+            jurisdictions.forEach(j => {
+                // Main Marker
+                L.circleMarker(j.p, { 
+                    radius: 5, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1, weight: 2 
+                }).addTo(map).bindTooltip(j.n, {
+                    permanent: true, direction: 'right', offset: [12, 0], className: 'tactical-label'
+                });
 
-            // 2. Rapid Zoom to Zamboanga HQ
-            map.flyTo([6.92, 122.07], 13, { duration: 1.5 });
+                // Radar Ping
+                L.circleMarker(j.p, {
+                    radius: 15, color: '#00ff66', weight: 1, fillOpacity: 0, className: 'pulse-ring'
+                }).addTo(map);
+            });
 
-            // 3. Mark the AOR Point
-            L.circleMarker([6.92, 122.07], { 
-                radius: 10, color: '#00ff66', fillColor: '#00ff66', fillOpacity: 0.5 
-            }).addTo(map).bindTooltip("DPPAR HQ ACTIVE", {permanent: true, className: 'tactical-label'}).openTooltip();
+            // Fast Fly-Out
+            map.flyTo([7.4, 122.3], 8, { duration: 0.7, easeLinearity: 0.2 });
 
-            // 4. Transition to Iframe
+            // Zero-Wait Transition
             setTimeout(() => {
-                loader.style.opacity = '0';
-                frame.style.display = 'block';
-                setTimeout(() => {
-                    frame.style.opacity = '1';
-                    loader.style.display = 'none';
-                    // Optional: hide map to save resources after load
-                    document.getElementById('map-bg').style.display = 'none';
-                }, 800);
-            }, 1800);
+                frame.style.visibility = "visible";
+                frame.style.opacity = "1";
+                hud.style.opacity = "0";
+                setTimeout(() => { document.getElementById('map').style.display = "none"; }, 800);
+            }, 800);
         }
 
-        /** ANTI-INSPECTION PROTOCOL */
-        document.onkeydown = (e) => {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
-                return false;
-            }
+        document.onkeydown = (e) => { 
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false; 
         };
-
-        /** IDLE LOGOUT (30 MINS) */
-        let idleTime = 0;
-        const resetTimer = () => { idleTime = 0; };
-        window.onmousemove = resetTimer;
-        window.ontouchstart = resetTimer;
-        setInterval(() => {
-            idleTime++;
-            if (idleTime >= 30) window.location.reload();
-        }, 60000);
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </script>
 </body>
 </html>
