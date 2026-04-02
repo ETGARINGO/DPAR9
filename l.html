@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 | DPPAR </title>
+    <title>PRO9 | DPPAR COMMAND</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -12,60 +12,85 @@
         :root {
             --tactical-blue: #00d4ff;
             --defense-green: #00ff66;
+            --alert-gold: #ffcc00;
             --bg-black: #00050a;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
             overflow: hidden; background-color: var(--bg-black); 
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         #map {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 1;
-            filter: brightness(0.4) contrast(1.6) saturate(0.6) hue-rotate(185deg);
-            background: #000;
+            filter: brightness(0.4) contrast(1.7) saturate(0.4) hue-rotate(185deg);
         }
 
-        /* --- COMMAND HUD --- */
+        /* --- ADVANCED TACTICAL HUD --- */
         #hud {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10; pointer-events: none;
-            transition: opacity 0.5s ease;
+            background: radial-gradient(circle at center, transparent 30%, rgba(0, 10, 20, 0.4) 100%);
         }
 
-        .corner-bracket {
-            position: absolute; width: 40px; height: 40px;
-            border: 2px solid var(--tactical-blue);
-            opacity: 0.5;
-        }
-        .top-left { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
-        .top-right { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
-
-        .aor-header {
-            position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
-            color: white; text-align: center; letter-spacing: 5px;
+        /* Cyber Grid Overlay */
+        .grid-overlay {
+            position: absolute; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
 
-        .status-box {
+        .corner {
+            position: absolute; width: 60px; height: 60px;
+            border: 2px solid var(--tactical-blue); opacity: 0.6;
+        }
+        .tl { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
+        .tr { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
+        .bl { bottom: 20px; left: 20px; border-right: 0; border-top: 0; }
+        .br { bottom: 20px; right: 20px; border-left: 0; border-top: 0; }
+
+        .header-main {
+            position: absolute; top: 40px; width: 100%; text-align: center;
+            color: white; text-transform: uppercase;
+        }
+
+        .header-main h1 { margin: 0; font-size: 24px; letter-spacing: 12px; font-weight: 900; }
+        .header-main span { color: var(--tactical-blue); font-size: 10px; letter-spacing: 4px; }
+
+        .terminal {
             position: absolute; bottom: 40px; left: 40px;
-            color: var(--defense-green); font-family: monospace; font-size: 12px;
-            background: rgba(0,0,0,0.7); padding: 15px; border: 1px solid var(--defense-green);
+            color: var(--defense-green); font-family: 'Courier New', monospace; font-size: 11px;
+            background: rgba(0,10,20,0.85); padding: 20px;
+            border-left: 3px solid var(--defense-green);
+            min-width: 250px; box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         #secure-frame {
             position: absolute; width: 100%; height: 100%; border: none;
             z-index: 100; opacity: 0; display: none;
-            transition: opacity 0.8s ease-in;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Rapid Expand Animation */
-        @keyframes expandShield {
-            from { stroke-dashoffset: 1000; opacity: 0; }
-            to { stroke-dashoffset: 0; opacity: 1; }
+        /* Radar Pulse Animation */
+        .radar-sweep {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 200px; height: 200px; border: 1px solid var(--tactical-blue);
+            border-radius: 50%; opacity: 0; animation: radarPulse 2s infinite;
         }
-        .shield-line { animation: expandShield 1.5s ease-out forwards; }
+        @keyframes radarPulse {
+            0% { width: 0; height: 0; opacity: 0.8; }
+            100% { width: 1000px; height: 1000px; opacity: 0; }
+        }
+
+        /* Labels */
+        .tactical-label {
+            background: none !important; border: none !important;
+            color: white !important; font-weight: bold !important;
+            font-size: 10px !important; text-shadow: 1px 1px 2px black;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -73,83 +98,94 @@
     <div id="map"></div>
 
     <div id="hud">
-        <div class="corner-bracket top-left"></div>
-        <div class="corner-bracket top-right"></div>
+        <div class="grid-overlay"></div>
+        <div class="radar-sweep"></div>
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
 
-        <div class="aor-header">
-            <h1 style="margin:0; font-size: 20px;">REGION IX</h1>
-            <div style="color: var(--tactical-blue); font-size: 10px;">DPPAR</div>
+        <div class="header-main">
+            <h1>REGION IX</h1>
+            <span>DPPAR SECURITY PERIMETER</span>
         </div>
 
-        <div class="status-box" id="stat-box">
-            > INITIALIZING SAT-LINK...<br>
-            > SCANNING JURISDICTIONS...<br>
-            > <span id="sync-pct">0%</span> ENCRYPTED
+        <div class="terminal" id="term">
+            [SYS] UPLINK_ESTABLISHED<br>
+            [LOC] 7.50° N, 122.30° E<br>
+            [NET] <span id="sync">SYNCHRONIZING...</span><br>
+            [MSG] DEPLOYING DEFENSES
         </div>
     </div>
 
     <iframe id="secure-frame" 
             src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
             allow="fullscreen; geolocation; camera; microphone;"
-            onload="triggerAORZoom()">
+            onload="launchDPPAR()">
     </iframe>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        const jurisdictions = [
-            { name: "SULU", pos: [6.0, 121.0] },
-            { name: "ISABELA", pos: [6.7, 121.9] },
-            { name: "ZAMBO CITY", pos: [6.92, 122.07] },
-            { name: "SIBUGAY", pos: [7.7, 122.5] },
-            { name: "ZAMBO SUR", pos: [7.8, 123.3] },
-            { name: "ZAMBO NORTE", pos: [8.2, 123.0] }
+        const nodes = [
+            { n: "SULU", p: [6.0, 121.0] },
+            { n: "ISABELA", p: [6.7, 121.9] },
+            { n: "ZAMBO CITY", p: [6.92, 122.07] },
+            { n: "SIBUGAY", p: [7.7, 122.5] },
+            { n: "ZAMBO SUR", p: [7.8, 123.3] },
+            { n: "ZAMBO NORTE", p: [8.2, 123.0] }
         ];
 
-        // Start Zoomed IN at HQ for a dramatic zoom-out
-        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([6.92, 122.07], 13);
+        // START: Deep Zoom at Zamboanga City
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([6.92, 122.07], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-        async function triggerAORZoom() {
-            const syncPct = document.getElementById('sync-pct');
-            const statBox = document.getElementById('stat-box');
+        async function launchDPPAR() {
+            const sync = document.getElementById('sync');
+            const term = document.getElementById('term');
             
-            // 1. Zoom Out to view whole AOR (Fast)
-            map.flyTo([7.5, 122.3], 8, { duration: 1.5, easeLinearity: 0.1 });
+            // 1. FAST ZOOM OUT (Super dynamic)
+            map.flyTo([7.4, 122.4], 8, { duration: 1.2, easeLinearity: 0.25 });
 
-            // 2. Simultaneous Shield Activation
+            // 2. SHIELD INTERLOCK (Trigger halfway through zoom)
             setTimeout(() => {
-                let coords = jurisdictions.map(j => j.pos);
+                const route = nodes.map(n => n.p);
                 
-                // Add All City Nodes
-                jurisdictions.forEach(j => {
-                    L.circleMarker(j.pos, {
-                        radius: 5, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1
-                    }).addTo(map).bindTooltip(j.name, {permanent: true, direction: 'top', className: 'tactical-label'});
-                });
-
-                // Draw Interlocked Polyline
-                L.polyline(coords, {
-                    color: '#00ff66', weight: 2, opacity: 0.8, dashArray: '10, 10'
+                // Deploy Line
+                L.polyline(route, {
+                    color: '#00ff66', weight: 2, opacity: 0.8, dashArray: '8, 12'
                 }).addTo(map);
 
-                syncPct.innerText = "100%";
-                statBox.innerHTML += "<br>> SHIELD ACTIVE<br>> REDIRECTING...";
-            }, 800);
+                // Deploy Nodes
+                nodes.forEach(n => {
+                    L.circleMarker(n.p, {
+                        radius: 4, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1, weight: 2
+                    }).addTo(map).bindTooltip(n.n, {permanent: true, direction: 'right', className: 'tactical-label'});
+                    
+                    // Defense Rings
+                    L.circle(n.p, { radius: 25000, color: '#00d4ff', weight: 1, fillOpacity: 0.05 }).addTo(map);
+                });
 
-            // 3. Final Transition
+                sync.innerText = "LOCKED";
+                sync.style.color = "var(--defense-green)";
+                term.innerHTML += "<br>> AOR PERIMETER SECURE";
+            }, 600);
+
+            // 3. SEAMLESS TRANSITION
             setTimeout(() => {
                 const frame = document.getElementById('secure-frame');
                 frame.style.display = "block";
                 frame.style.opacity = "1";
-                document.getElementById('hud').style.opacity = "0";
                 
                 setTimeout(() => {
-                    document.getElementById('map').style.display = "none";
-                }, 1000);
-            }, 2500);
+                    document.getElementById('hud').style.opacity = "0";
+                    // Brief delay to prevent white flash before iframe takes over
+                    setTimeout(() => {
+                        document.getElementById('map').style.display = "none";
+                    }, 600);
+                }, 400);
+            }, 2000);
         }
 
+        // Security
         document.onkeydown = (e) => { if(e.keyCode == 123 || e.ctrlKey) return false; };
     </script>
 </body>
