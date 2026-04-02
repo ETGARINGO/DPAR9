@@ -37,10 +37,18 @@
         }
 
         .header-main {
-            position: absolute; top: 40px; text-align: center; color: white; text-transform: uppercase;
+            text-align: center; color: white; text-transform: uppercase;
+            margin-top: 20px;
         }
-        .header-main h1 { margin: 0; font-size: 1.2rem; letter-spacing: 6px; font-weight: 900; text-shadow: 0 0 15px var(--tactical-blue); }
-        .logo-img { width: 80px; height: 80px; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--tactical-blue)); }
+        
+        .entrance-logo {
+            width: 100px;
+            height: auto;
+            filter: drop-shadow(0 0 15px var(--tactical-blue));
+            margin-bottom: 10px;
+        }
+
+        .header-main h1 { margin: 0; font-size: 1.2rem; letter-spacing: 8px; font-weight: 900; text-shadow: 0 0 15px var(--tactical-blue); }
 
         /* HIGH VISIBILITY LABELS */
         .tactical-label {
@@ -72,12 +80,12 @@
     <div id="map"></div>
 
     <div id="hud">
-        <img src="pro9 logo.png" class="logo-img" onerror="this.style.display='none'">
+        <img src="pro9 logo.png" alt="PRO9 Logo" class="entrance-logo">
         <div class="header-main">
             <h1>POLICE REGIONAL OFFICE 9</h1>
             <p style="font-size: 0.6rem; letter-spacing: 3px; color: var(--tactical-blue); margin-top: 5px;">DPPAR ADMIN | UPLINK ESTABLISHED</p>
         </div>
-        <div style="border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--tactical-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+        <div style="border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--tactical-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px;"></div>
     </div>
 
     <iframe id="secure-frame" 
@@ -98,11 +106,9 @@
             { n: "ZAMBO NORTE", p: [8.2, 123.0] }
         ];
 
-        // 1. Initial HQ Setup
         const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([6.92, 122.07], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-        // 2. Deploy Tactical Markers
         jurisdictions.forEach(j => {
             L.circleMarker(j.p, { radius: 5, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1, weight: 2 }).addTo(map)
              .bindTooltip(j.n, { permanent: true, direction: 'right', offset: [12, 0], className: 'tactical-label' });
@@ -114,15 +120,12 @@
             const frame = document.getElementById('secure-frame');
             const hud = document.getElementById('hud');
 
-            // Warp Zoom Out (High velocity 0.6s)
             map.flyTo([7.4, 122.3], 8, { duration: 0.6, easeLinearity: 0.1 });
 
-            // Smooth reveal
             setTimeout(() => {
                 frame.style.visibility = "visible";
                 frame.style.opacity = "1";
                 hud.style.opacity = "0";
-                
                 setTimeout(() => { 
                     document.getElementById('map').remove();
                     hud.remove();
@@ -130,14 +133,12 @@
             }, 700);
         }
 
-        // Security bypass protection
         document.onkeydown = function(e) {
             if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
                 return false;
             }
         };
 
-        // 30-Minute Security Session
         let idleTime = 0;
         const reset = () => idleTime = 0;
         ['mousemove', 'keypress', 'touchstart'].forEach(evt => window.addEventListener(evt, reset));
