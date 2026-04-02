@@ -5,161 +5,160 @@
     <link rel="icon" type="image/png" href="pro9 logo.png">
     <link rel="apple-touch-icon" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 TACTICAL COMMAND | REGION IX</title>
+    <title>PRO9 TACTICAL | COMMAND HQ</title>
     
     <style>
         :root {
             --tactical-blue: #0749a0;
             --hud-green: #00ff41;
-            --bg-dark: #010b1a;
-            --map-tint: rgba(7, 73, 160, 0.2);
+            --bg-dark: #01060f;
+            --glass: rgba(1, 11, 26, 0.85);
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
             overflow: hidden; background-color: var(--bg-dark); 
-            position: fixed; font-family: 'Share Tech Mono', monospace;
+            position: fixed; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* --- TACTICAL MAP BACKGROUND --- */
+        /* --- BACKGROUND SATELLITE LAYER --- */
         #map-bg {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* High-res Satellite view of Zamboanga region */
             background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center/cover no-repeat;
-            filter: brightness(0.4) contrast(1.4) saturate(0.5) hue-rotate(180deg);
+            filter: brightness(0.3) contrast(1.2) hue-rotate(185deg) blur(2px);
             z-index: 0;
+            transform: scale(1.1);
         }
 
-        /* Scanline & Grid HUD */
+        /* HUD Grid Overlay */
         .hud-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: 
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
-                repeating-linear-gradient(90deg, rgba(7, 73, 160, 0.05) 0px, rgba(7, 73, 160, 0.05) 1px, transparent 1px, transparent 60px),
-                repeating-linear-gradient(0deg, rgba(7, 73, 160, 0.05) 0px, rgba(7, 73, 160, 0.05) 1px, transparent 1px, transparent 60px);
-            background-size: 100% 4px, 60px 60px, 60px 60px;
-            pointer-events: none;
-            z-index: 2;
+                radial-gradient(circle, transparent 20%, var(--bg-dark) 90%),
+                repeating-linear-gradient(rgba(7, 73, 160, 0.03) 0 1px, transparent 1px 40px),
+                repeating-linear-gradient(90deg, rgba(7, 73, 160, 0.03) 0 1px, transparent 1px 40px);
+            z-index: 1; pointer-events: none;
         }
 
-        /* Radar Pulse Effect */
-        .radar-pulse {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 10px; height: 10px;
-            background: var(--hud-green);
-            border-radius: 50%;
-            box-shadow: 0 0 20px var(--hud-green);
-            z-index: 1;
-        }
-        .radar-pulse::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px; height: 100px;
-            border: 2px solid var(--hud-green);
-            border-radius: 50%;
-            animation: pulse 3s infinite;
-        }
-
-        @keyframes pulse {
-            0% { width: 0; height: 0; opacity: 1; }
-            100% { width: 800px; height: 800px; opacity: 0; }
-        }
-
-        /* --- WAR ENTRANCE LOADER --- */
+        /* --- ENTRANCE ANIMATION (THUNDER SLAM) --- */
         #loader {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: #000; display: flex; align-items: center;
-            justify-content: center; z-index: 999;
+            justify-content: center; z-index: 9999;
+            transition: opacity 0.8s ease;
         }
 
-        .military-logo {
-            width: 160px;
+        .logo-impact {
+            width: 180px;
             filter: drop-shadow(0 0 30px var(--tactical-blue));
-            animation: impactSlam 0.4s cubic-bezier(0.17, 0.88, 0.32, 1.28) forwards;
-            opacity: 0;
+            animation: thunderStrike 0.5s cubic-bezier(0.17, 0.88, 0.32, 1.5) forwards;
         }
 
-        @keyframes impactSlam {
-            0% { transform: scale(5); opacity: 0; filter: brightness(10) blur(20px); }
+        @keyframes thunderStrike {
+            0% { transform: scale(8); opacity: 0; filter: brightness(20) blur(20px); }
             100% { transform: scale(1); opacity: 1; filter: brightness(1); }
         }
 
-        /* Frame for System Apps - Glassmorphism */
-        #secure-frame {
+        /* --- THE FITTED FORM (COMMAND CONSOLE) --- */
+        .console-container {
             position: absolute;
             top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 92%; height: 85%;
-            border: 1px solid rgba(7, 73, 160, 0.5);
-            background: rgba(1, 11, 26, 0.85);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(7, 73, 160, 0.2);
-            z-index: 5;
-            display: none;
-            backdrop-filter: blur(15px);
-            border-radius: 4px;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 95%; height: 90%;
+            max-width: 1600px;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column;
         }
 
-        .map-ui {
+        .console-header {
+            background: var(--tactical-blue);
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            display: flex; justify-content: space-between;
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 -5px 15px rgba(7, 73, 160, 0.3);
+        }
+
+        #secure-frame {
+            flex-grow: 1;
+            width: 100%;
+            border: 1px solid rgba(7, 73, 160, 0.4);
+            border-top: none;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Boot Text */
+        .boot-status {
             position: absolute;
-            bottom: 30px; left: 30px;
-            z-index: 10;
+            bottom: 20px; left: 20px;
             color: var(--hud-green);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.65rem;
+            z-index: 100;
             text-shadow: 0 0 5px var(--hud-green);
-            font-size: 0.8rem;
-            pointer-events: none;
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
     <div id="loader">
-        <img src="pro9 logo.png" alt="PRO9" class="military-logo">
+        <img src="pro9 logo.png" alt="PRO9" class="logo-impact">
     </div>
 
     <div id="map-bg"></div>
-    <div class="radar-pulse"></div>
     <div class="hud-overlay"></div>
 
-    <div class="map-ui">
-        <div style="color: #fff; letter-spacing: 2px;">STATUS: <span style="color: var(--hud-green);">ENCRYPTED UPLINK</span></div>
-        <div id="coords">LAT: 7.5085 | LNG: 122.0792</div>
-        <div style="font-size: 0.6rem; color: var(--tactical-blue);">REGION IX DATA STREAM | ZAMBOANGA_PENINSULA</div>
+    <div class="console-container" id="console">
+        <div class="console-header">
+            <span>TERMINAL A-09 // ZAMBOANGA PENINSULA COMMAND</span>
+            <span id="live-clock">00:00:00</span>
+        </div>
+        <iframe 
+            id="secure-frame"
+            src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
+            onload="startSystem()">
+        </iframe>
     </div>
 
-    <iframe 
-        id="secure-frame"
-        src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
-        onload="revealSystem()">
-    </iframe>
+    <div class="boot-status" id="boot-log">
+        >> INITIALIZING SATELLITE UPLINK...<br>
+        >> LOCATION: ZAMBOANGA_PENINSULA (REGION IX)<br>
+        >> ENCRYPTION: AES-256 ACTIVE
+    </div>
 
     <script>
-        function revealSystem() {
+        function startSystem() {
             setTimeout(() => {
-                const loader = document.getElementById('loader');
-                loader.style.transition = 'opacity 1s ease';
-                loader.style.opacity = '0';
+                // Fade out loader
+                document.getElementById('loader').style.opacity = '0';
+                
+                // Show Fitted Console
+                const console = document.getElementById('console');
+                console.style.opacity = '1';
+                console.style.transform = 'translate(-50%, -50%) scale(1)';
+                
                 setTimeout(() => {
-                    loader.style.display = 'none';
-                    const frame = document.getElementById('secure-frame');
-                    frame.style.display = 'block';
-                    frame.style.animation = 'fadeIn 1s ease';
-                }, 1000);
-            }, 1800);
+                    document.getElementById('loader').style.display = 'none';
+                }, 800);
+            }, 1500);
         }
 
-        // Real-time Coordinate Drift
+        // Live HUD Clock
         setInterval(() => {
-            const lat = (7.5085 + (Math.random() * 0.005)).toFixed(4);
-            const lng = (122.0792 + (Math.random() * 0.005)).toFixed(4);
-            document.getElementById('coords').innerText = `LAT: ${lat} | LNG: ${lng}`;
-        }, 3000);
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString();
+        }, 1000);
 
+        // Security Lock
         document.onkeydown = (e) => {
             if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) return false;
         };
