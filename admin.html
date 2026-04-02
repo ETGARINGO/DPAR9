@@ -5,75 +5,146 @@
     <link rel="icon" type="image/png" href="LOGO.png">
     <link rel="apple-touch-icon" href="LOGO.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 DPPAR COMMAND TRACK / VALIDATOR</title>
+    <title>PRO9 | DPPAR COMMAND TRACK / VALIDATOR</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
+        :root {
+            --tactical-blue: #00d4ff;
+            --defense-green: #00ff66;
+            --bg-black: #010b1a;
+        }
+
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: #010b1a; 
+            overflow: hidden; background-color: var(--bg-black); 
             position: fixed; font-family: 'Segoe UI', sans-serif;
         }
-        iframe {
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; border: none;
-            -webkit-overflow-scrolling: touch;
-            z-index: 1;
+
+        #map {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; filter: brightness(0.5) contrast(1.6) saturate(0.4) hue-rotate(185deg);
         }
-        #loader {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #010b1a; display: flex; align-items: center;
-            justify-content: center; z-index: 99; color: #0749a0;
+
+        /* TACTICAL HUD */
+        #hud {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+            background: radial-gradient(circle, transparent 30%, rgba(1, 11, 26, 0.9) 100%);
+            transition: opacity 0.4s ease-out;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+
+        .header-main {
+            position: absolute; top: 40px; text-align: center; color: white; text-transform: uppercase;
+        }
+        .header-main h1 { margin: 0; font-size: 1.2rem; letter-spacing: 8px; font-weight: 900; text-shadow: 0 0 15px var(--tactical-blue); }
+
+        /* HIGH VISIBILITY LABELS */
+        .tactical-label {
+            background: rgba(0, 20, 40, 0.85) !important;
+            border: 1px solid var(--tactical-blue) !important;
+            color: #fff !important;
+            font-weight: 900 !important;
+            font-family: monospace !important;
+            font-size: 11px !important;
+            padding: 2px 8px !important;
+            border-radius: 3px !important;
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        @keyframes nodePulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+        .pulse-ring { border: 2px solid var(--defense-green); border-radius: 50%; animation: nodePulse 1.5s infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #secure-frame {
+            position: absolute; width: 100%; height: 100%; border: none;
+            z-index: 100; opacity: 0; visibility: hidden;
+            transition: opacity 0.5s ease-in;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="loader">
-        <div style="text-align: center;">
-            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #0749a0; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto;"></div>
-            <p style="margin-top: 15px; font-size: 0.8rem; letter-spacing: 2px; color: #fff;">PRO9 SECURE GATEWAY</p>
-            <p style="font-size: 0.6rem; color: #0749a0;">DPAR9 | Authorized Access Only</p>
+    <div id="map"></div>
+
+    <div id="hud">
+        <div class="header-main">
+            <h1>POLICE REGIONAL OFFICE 9</h1>
+            <p style="font-size: 0.6rem; letter-spacing: 3px; color: var(--tactical-blue); margin-top: 5px;">DPPAR ADMIN | UPLINK ESTABLISHED</p>
         </div>
+        <div style="border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--tactical-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
     </div>
 
-    <iframe 
-        id="secure-frame"
-        src="https://script.google.com/macros/s/AKfycbwX5pbW0UYIKkaNSnZaN04VT5_hhhriSQLvHk9WaEz2-dr40l4QFeKHXpfmiQMwsATFiA/exec?p=admin" 
-        allowfullscreen
-        onload="document.getElementById('loader').style.display='none';">
+    <iframe id="secure-frame" 
+            src="https://script.google.com/macros/s/AKfycbwX5pbW0UYIKkaNSnZaN04VT5_hhhriSQLvHk9WaEz2-dr40l4QFeKHXpfmiQMwsATFiA/exec?p=admin" 
+            allow="geolocation; camera; microphone; fullscreen; autoplay; display-capture;"
+            onload="overdriveLaunch()">
     </iframe>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        /**
-         * ANTI-INSPECTION & BYPASS PROTECTION
-         * Authorized by: Elizer T Garingo (Cyber Sec IV)
-         */
+        const jurisdictions = [
+            { n: "SULU", p: [6.0, 121.0] },
+            { n: "ISABELA", p: [6.7, 121.9] },
+            { n: "ZAMBO CITY", p: [6.92, 122.07] },
+            { n: "SIBUGAY", p: [7.7, 122.5] },
+            { n: "ZAMBO SUR", p: [7.8, 123.3] },
+            { n: "ZAMBO NORTE", p: [8.2, 123.0] }
+        ];
+
+        // 1. Initial Map Setup (HQ Deep Zoom)
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([6.92, 122.07], 14);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+        // 2. Immediate Deployment of Tactical Markers
+        jurisdictions.forEach(j => {
+            L.circleMarker(j.p, { radius: 5, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1, weight: 2 }).addTo(map)
+             .bindTooltip(j.n, { permanent: true, direction: 'right', offset: [12, 0], className: 'tactical-label' });
+            
+            L.circleMarker(j.p, { radius: 15, color: '#00ff66', weight: 1, fillOpacity: 0, className: 'pulse-ring' }).addTo(map);
+        });
+
+        function overdriveLaunch() {
+            const frame = document.getElementById('secure-frame');
+            const hud = document.getElementById('hud');
+
+            // Warp Zoom Out (0.6s)
+            map.flyTo([7.4, 122.3], 8, { duration: 0.6, easeLinearity: 0.1 });
+
+            // Reveal Admin Panel
+            setTimeout(() => {
+                frame.style.visibility = "visible";
+                frame.style.opacity = "1";
+                hud.style.opacity = "0";
+                // Cleanup background to optimize mobile performance
+                setTimeout(() => { 
+                    document.getElementById('map').remove();
+                    hud.remove();
+                }, 800);
+            }, 700);
+        }
+
+        /** * SECURITY PROTOCOLS 
+         * Authorized by: Cyber Sec IV
+         **/
         document.onkeydown = function(e) {
-            if(e.keyCode == 123 || 
-              (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
-              (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
                 return false;
             }
         };
 
-        /**
-         * IDLE LOGOUT PROTOCOL (30 MINUTES)
-         * Automatic security reload for DPAR9 system.
-         */
+        // Idle Timeout (30 Minutes)
         let idleTime = 0;
-        const IDLE_LIMIT = 30; 
+        const reset = () => idleTime = 0;
+        ['mousemove', 'keypress', 'touchstart'].forEach(evt => window.addEventListener(evt, reset));
 
-        function resetTimer() { idleTime = 0; }
-        window.onmousemove = resetTimer;
-        window.onkeypress = resetTimer;
-        window.ontouchstart = resetTimer;
-
-        setInterval(function() {
+        setInterval(() => {
             idleTime++;
-            if (idleTime >= IDLE_LIMIT) { 
-                window.location.reload(); 
-            }
+            if (idleTime >= 30) window.location.reload();
         }, 60000);
     </script>
 </body>
