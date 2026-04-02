@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="LOGO.png">
-    <link rel="apple-touch-icon" href="LOGO.png">
+    <link rel="icon" type="image/png" href="pro9 logo.png">
+    <link rel="apple-touch-icon" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 DPPAR SYSTEM</title>
+    <title>PRO9 DPPAR SYSTEM | TACTICAL</title>
     
     <style>
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
             overflow: hidden; background-color: #010b1a; 
-            position: fixed; font-family: 'Segoe UI', sans-serif;
+            position: fixed; font-family: 'Courier New', Courier, monospace;
         }
         iframe {
             position: absolute; top: 0; left: 0; 
@@ -20,95 +20,126 @@
             z-index: 1;
         }
 
-        /* LIGHTNING ENTRANCE STYLES */
+        /* --- MILITARY WAR LOADER --- */
         #loader {
             position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #010b1a; display: flex; align-items: center;
+            background: radial-gradient(circle, #021a33 0%, #000 100%);
+            display: flex; align-items: center;
             justify-content: center; z-index: 99;
+            overflow: hidden;
         }
 
-        .lightning-container {
+        /* CRT Scanline Effect */
+        #loader::before {
+            content: " ";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            z-index: 101; pointer-events: none;
+        }
+
+        .war-container {
             position: relative;
             text-align: center;
+            animation: screenShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            animation-delay: 0.2s;
         }
 
-        /* The Logo Animation */
-        .thunder-logo {
-            width: 120px; /* Adjust size as needed */
+        /* Tactical Logo Strike */
+        .military-logo {
+            width: 150px;
             height: auto;
-            filter: drop-shadow(0 0 10px #fff);
-            animation: thunderStrike 0.4s ease-out forwards;
             opacity: 0;
+            filter: drop-shadow(0 0 20px #0749a0) contrast(1.2);
+            animation: logoSlam 0.3s ease-out forwards, glitch 2s infinite linear alternate-reverse;
+            animation-delay: 0.2s;
         }
 
-        /* Lightning Flash Effect */
-        .flash {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: white;
-            opacity: 0;
-            z-index: 100;
-            pointer-events: none;
-            animation: globalFlash 0.5s ease-out;
-        }
-
-        /* Blue Electric Glow */
-        .electric-glow {
+        /* Targeting Crosshair */
+        .crosshair {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 150px; height: 150px;
-            background: radial-gradient(circle, rgba(7,73,160,0.8) 0%, rgba(1,11,26,0) 70%);
+            width: 250px; height: 250px;
+            border: 1px solid rgba(7, 73, 160, 0.3);
             border-radius: 50%;
-            animation: pulseGlow 0.2s infinite alternate;
+            animation: rotateHUD 4s linear infinite;
+        }
+        .crosshair::before, .crosshair::after {
+            content: ''; position: absolute; background: #0749a0;
+        }
+        .crosshair::before { width: 100%; height: 1px; top: 50%; left: 0; }
+        .crosshair::after { width: 1px; height: 100%; left: 50%; top: 0; }
+
+        /* Animations */
+        @keyframes logoSlam {
+            0% { transform: scale(4); opacity: 0; filter: brightness(10) blur(20px); }
+            100% { transform: scale(1); opacity: 1; filter: brightness(1); }
         }
 
-        @keyframes thunderStrike {
-            0% { transform: scale(5); opacity: 0; filter: brightness(10) blur(10px); }
-            20% { opacity: 1; filter: brightness(5) blur(2px); }
-            100% { transform: scale(1); opacity: 1; filter: brightness(1) drop-shadow(0 0 15px #0749a0); }
+        @keyframes screenShake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
         }
 
-        @keyframes globalFlash {
-            0% { opacity: 0; }
-            10% { opacity: 1; }
-            20% { opacity: 0; }
-            30% { opacity: 0.8; }
-            100% { opacity: 0; }
+        @keyframes glitch {
+            0% { clip-path: inset(80% 0 1% 0); transform: translate(-2px, 2px); }
+            5% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -2px); }
+            10% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            100% { clip-path: inset(0 0 0 0); transform: translate(0); }
         }
 
-        @keyframes pulseGlow {
-            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
-            to { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        @keyframes rotateHUD {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        .text-reveal {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            letter-spacing: 3px;
-            color: #fff;
+        .status-text {
+            margin-top: 30px;
+            color: #00ff00; /* Tactical Green */
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px auto;
+            position: relative;
             overflow: hidden;
-            white-space: nowrap;
-            border-right: 2px solid #0749a0;
-            width: 0;
-            animation: typeText 1s steps(20) forwards;
-            animation-delay: 0.4s;
+        }
+        .loading-bar::after {
+            content: '';
+            position: absolute;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #0749a0;
+            animation: loadProgress 1.2s ease-in-out infinite;
         }
 
-        @keyframes typeText {
-            from { width: 0; }
-            to { width: 100%; }
+        @keyframes loadProgress {
+            0% { left: -100%; }
+            50% { left: 0; }
+            100% { left: 100%; }
         }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
     <div id="loader">
-        <div class="flash"></div> <div class="lightning-container">
-            <div class="electric-glow"></div>
-            <img src="LOGO.png" alt="LOGO" class="thunder-logo">
-            <p class="text-reveal">PRO9 SECURE GATEWAY</p>
-            <p style="font-size: 0.6rem; color: #0749a0; margin-top: 5px;">DPAR9 | Authorized Access Only</p>
+        <div class="crosshair"></div>
+        <div class="war-container">
+            <img src="pro9 logo.png" alt="PRO9" class="military-logo">
+            <p class="status-text">System: Booting Tactical Interface...</p>
+            <div class="loading-bar"></div>
+            <p style="font-size: 0.5rem; color: #0749a0; letter-spacing: 1px;">ENCRYPTION LEVEL: AES-256 | REGION IX</p>
         </div>
     </div>
 
@@ -116,33 +147,25 @@
         id="secure-frame"
         src="https://script.google.com/macros/s/AKfycby9BxKz9gOqHB4dIOAjp1TXQjx2Nh1r5m4BuiTPlsyhC9GHoPHGN2Ry835NNkc7q-OKVg/exec?p=index" 
         allowfullscreen
-        onload="setTimeout(() => { document.getElementById('loader').style.display='none'; }, 1500);">
+        onload="setTimeout(() => { document.getElementById('loader').style.opacity='0'; setTimeout(()=>{document.getElementById('loader').style.display='none'}, 500); }, 2000);">
     </iframe>
 
     <script>
-        // ANTI-INSPECTION & BYPASS PROTECTION
+        // ANTI-INSPECTION PROTECTION
         document.onkeydown = function(e) {
-            if(e.keyCode == 123 || 
-              (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
-              (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
                 return false;
             }
         };
 
-        // IDLE LOGOUT PROTOCOL (30 MINUTES)
+        // IDLE RELOAD
         let idleTime = 0;
-        const IDLE_LIMIT = 30; 
-
-        function resetTimer() { idleTime = 0; }
+        const resetTimer = () => { idleTime = 0; };
         window.onmousemove = resetTimer;
         window.onkeypress = resetTimer;
-        window.ontouchstart = resetTimer;
-
-        setInterval(function() {
+        setInterval(() => {
             idleTime++;
-            if (idleTime >= IDLE_LIMIT) { 
-                window.location.reload(); 
-            }
+            if (idleTime >= 30) window.location.reload();
         }, 60000);
     </script>
 </body>
