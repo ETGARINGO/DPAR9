@@ -5,255 +5,169 @@
     <link rel="icon" type="image/png" href="pro9 logo.png">
     <link rel="apple-touch-icon" href="pro9 logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 DPPAR SYSTEM | TACTICAL COMMAND</title>
+    <title>PRO9 DPPAR | REGIONAL SURVEILLANCE V10</title>
     
     <style>
         :root {
-            --tactical-blue: #0a84ff;
+            --accent: #0a84ff;
             --hud-green: #00ff41;
-            --bg-dark: #010b1a;
-            --glass-bg: rgba(1, 11, 26, 0.85);
+            --warning: #ff3b30;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: var(--bg-dark); 
-            position: fixed; font-family: 'Segoe UI', Tahoma, sans-serif;
+            overflow: hidden; background-color: #000; 
+            position: fixed; font-family: 'Courier New', monospace;
         }
 
-        /* --- ROVING SATELLITE BACKGROUND --- */
-        #map-roving {
-            position: fixed;
-            top: -20%; left: -20%; 
-            width: 140%; height: 140%;
-            background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') center/cover no-repeat;
-            filter: brightness(0.25) contrast(1.2) hue-rotate(185deg) saturate(0.5);
-            z-index: 0;
-            animation: rovingScan 80s linear infinite alternate;
-        }
-
-        @keyframes rovingScan {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-5%, -8%) scale(1.1); }
-            100% { transform: translate(3%, 4%) scale(1); }
-        }
-
-        /* HUD Grid Overlay */
-        .hud-grid {
+        /* --- WIDE-ANGLE SATELLITE DEPLOYMENT --- */
+        #map-viewport {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                radial-gradient(circle at center, transparent 30%, var(--bg-dark) 100%),
-                repeating-linear-gradient(rgba(10, 132, 255, 0.03) 0 1px, transparent 1px 50px),
-                repeating-linear-gradient(90deg, rgba(10, 132, 255, 0.03) 0 1px, transparent 1px 50px);
-            z-index: 1; pointer-events: none;
+            z-index: 1;
+            filter: saturate(0.4) contrast(1.5) brightness(0.4) hue-rotate(190deg);
+            /* Focus: Camp Abendan, Zamboanga City */
+            transform: scale(5) translate(5%, 2%); 
+            transition: transform 4s cubic-bezier(0.15, 0.85, 0.35, 1);
         }
 
-        /* --- TACTICAL ENTRANCE LOADER --- */
+        #map-viewport.global-view {
+            /* Wide view including Sulu and Tawi-Tawi */
+            transform: scale(1) translate(0, 0);
+        }
+
+        iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
+
+        /* --- LIGHTNING ARC --- */
+        #flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; opacity: 0; z-index: 10000; pointer-events: none;
+        }
+        .strike-sequence { animation: tacticalFlash 0.4s ease-out forwards; }
+        @keyframes tacticalFlash {
+            0% { opacity: 0; }
+            10% { opacity: 1; filter: contrast(2); }
+            30% { opacity: 0.1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
+        /* --- COMMAND LOADER --- */
         #loader {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #000; display: flex; align-items: center;
-            justify-content: center; z-index: 9999;
-            transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, #000 80%);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+            transition: opacity 0.6s ease;
         }
 
-        .entrance-content {
-            text-align: center;
-            animation: impactPulse 2s infinite ease-in-out;
+        .logo-container { text-align: center; }
+        .logo-main {
+            width: 140px;
+            filter: drop-shadow(0 0 30px var(--accent));
+            animation: slamDown 0.5s cubic-bezier(0.15, 0.85, 0.35, 1.2) forwards;
         }
-
-        .logo-impact {
-            width: 160px;
-            filter: drop-shadow(0 0 40px var(--tactical-blue));
-            animation: slam 0.5s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
-        }
-
-        @keyframes slam {
-            0% { transform: scale(5); opacity: 0; filter: brightness(10); }
+        @keyframes slamDown {
+            0% { transform: scale(6); opacity: 0; filter: brightness(10); }
             100% { transform: scale(1); opacity: 1; filter: brightness(1); }
         }
 
-        @keyframes impactPulse {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.02); filter: brightness(1.2); }
+        /* --- TACTICAL CONSOLE --- */
+        #console-gate {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -48%) scale(0.94);
+            width: 98%; height: 95%; z-index: 20;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            opacity: 0; 
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 8px; overflow: hidden;
+            box-shadow: 0 0 100px rgba(0,0,0,0.95);
         }
+        #console-gate.active { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-        /* --- FITTED CONSOLE INTERFACE --- */
-        #console-window {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.96);
-            width: 96%; height: 92%;
-            z-index: 10;
-            opacity: 0;
-            transition: all 0.8s cubic-bezier(0.2, 1, 0.2, 1);
-            display: flex; flex-direction: column;
-            border: 1px solid rgba(10, 132, 255, 0.3);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+        #form-feed { background: rgba(1, 11, 26, 0.8); backdrop-filter: blur(20px); pointer-events: auto; }
+
+        /* --- REGIONAL TELEMETRY HUD --- */
+        .telemetry-deck {
+            position: absolute; bottom: 25px; left: 25px; z-index: 30;
+            color: var(--hud-green); font-size: 11px; line-height: 1.5;
+            background: rgba(0, 10, 20, 0.6); padding: 10px;
+            border-left: 2px solid var(--hud-green);
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.5s ease 2s, transform 0.5s ease 2s;
         }
-
-        #console-window.active {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        /* Fullscreen State */
-        #console-window.fullscreen-mode {
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 0;
-            border: none;
-        }
-
-        .header-bar {
-            background: rgba(10, 132, 255, 0.15);
-            backdrop-filter: blur(15px);
-            padding: 12px 25px;
-            display: flex; justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(10, 132, 255, 0.3);
-        }
-
-        .btn-toggle {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--tactical-blue);
-            color: #fff;
-            font-size: 9px;
-            padding: 5px 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: 0.3s;
-        }
-
-        .btn-toggle:hover { background: var(--tactical-blue); }
-
-        #secure-frame {
-            flex: 1;
-            width: 100%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border: none;
-        }
-
-        /* Scanning Metadata Overlay */
-        .scan-data {
-            position: absolute;
-            bottom: 25px; left: 25px;
-            color: var(--hud-green);
-            font-family: 'Courier New', monospace;
-            font-size: 10px;
-            line-height: 1.5;
-            z-index: 5;
-            pointer-events: none;
-            text-shadow: 0 0 5px var(--hud-green);
-        }
+        .telemetry-deck.active { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="map-roving"></div>
-    <div class="hud-grid"></div>
+    <div id="flash-overlay"></div>
+    
+    <div id="map-viewport">
+        <iframe src="https://maps.google.com/?cid=15926670703505626648&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNl"></iframe>
+    </div>
 
     <div id="loader">
-        <div class="entrance-content">
-            <img src="pro9 logo.png" alt="PRO9" class="logo-impact">
-            <p style="color: #fff; font-size: 0.8rem; letter-spacing: 4px; margin-top: 20px;">NAVIGATING SECTOR IX...</p>
-            <p style="color: var(--tactical-blue); font-size: 0.6rem;">SECURE UPLINK ESTABLISHED</p>
+        <div class="logo-container">
+            <img src="pro9 logo.png" class="logo-main">
+            <div id="boot-status" style="color: #fff; letter-spacing: 4px; font-size: 9px; margin-top: 20px;">SYNCING REGIONAL CHANNELS...</div>
         </div>
     </div>
 
-    <div id="console-window">
-        <div class="header-bar">
-            <div style="color: var(--tactical-blue); font-size: 11px; font-weight: bold; letter-spacing: 2px;">
-                DPPAR SYSTEM // REGION IX COMMAND
-            </div>
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <div id="clock" style="color: white; font-family: monospace; font-size: 13px;">00:00:00</div>
-                <button class="btn-toggle" onclick="toggleFullScreen()">Maximize View</button>
-            </div>
-        </div>
-        <iframe 
-            id="secure-frame"
-            src="https://script.google.com/macros/s/AKfycbzq5aWj56E8BhCov5DdEwbn5jYGxbPSKMxy8YkZQateINb-pc4Nk6nj-ZgnEE3sb43WNg/exec?p=index" 
-            allowfullscreen
-            onload="launchSystem()">
-        </iframe>
+    <div id="console-gate">
+        <iframe id="form-feed" src="https://script.google.com/macros/s/AKfycbzq5aWj56E8BhCov5DdEwbn5jYGxbPSKMxy8YkZQateINb-pc4Nk6nj-ZgnEE3sb43WNg/exec?p=index"></iframe>
     </div>
 
-    <div class="scan-data">
-        >> SECTOR: ZAMBO_PENINSULA_SULU<br>
-        >> SCAN_STATUS: ROVING_ACTIVE<br>
-        >> <span id="coords">LAT: 7.5085 | LNG: 122.0792</span>
+    <div class="telemetry-deck" id="hud">
+        [ SYSTEM ] ORBITAL_UPLINK_STABLE<br>
+        [ AREA ] ZAMBO_PENINSULA & SULU_ARCHIPELAGO<br>
+        [ COORDS ] <span id="dyn-pos">LAT: 6.9534 | LNG: 122.1301</span><br>
+        [ STATUS ] MONITORING_ACTIVE
     </div>
 
     <script>
         /**
-         * INITIALIZATION & LAUNCH
+         * TACTICAL REGIONAL DEPLOYMENT
+         * Optimized for Elizer T Garingo
          */
-        function launchSystem() {
+        window.addEventListener('load', () => {
+            const viewport = document.getElementById('map-viewport');
+            const flash = document.getElementById('flash-overlay');
+            const loader = document.getElementById('loader');
+            const consoleGate = document.getElementById('console-gate');
+            const hud = document.getElementById('hud');
+
+            // Sequential Launch
             setTimeout(() => {
-                const loader = document.getElementById('loader');
-                const consoleWin = document.getElementById('console-window');
+                // 1. Begin Satellite Ascent (Zoom Out)
+                viewport.classList.add('global-view');
                 
-                loader.style.opacity = '0';
-                consoleWin.classList.add('active');
-                
+                // 2. High-Voltage Pulse at Peak Ascent
                 setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 1000);
-            }, 2000);
-        }
+                    flash.classList.add('strike-sequence');
+                    
+                    // 3. Deploy Command Console
+                    setTimeout(() => {
+                        loader.style.opacity = '0';
+                        consoleGate.classList.add('active');
+                        hud.classList.add('active');
+                        
+                        setTimeout(() => { loader.style.display = 'none'; }, 600);
+                    }, 100);
+                }, 1500);
+            }, 800);
+        });
 
-        /**
-         * FULLSCREEN TOGGLE LOGIC
-         */
-        function toggleFullScreen() {
-            const el = document.getElementById('console-window');
-            el.classList.toggle('fullscreen-mode');
-            
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        }
-
-        /**
-         * LIVE HUD & CLOCK
-         */
+        // Dynamic coordinate drifting for regional realism
         setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('en-GB');
-            
-            // Random coordinate drift for tactical feel (Region IX to Sulu)
-            const lat = (6.0 + (Math.random() * 2.5)).toFixed(4);
-            const lng = (120.2 + (Math.random() * 3.5)).toFixed(4);
-            document.getElementById('coords').innerText = `LAT: ${lat} | LNG: ${lng}`;
-        }, 1000);
+            const lat = (5.8 + (Math.random() * 2.2)).toFixed(4);
+            const lng = (120.5 + (Math.random() * 2.5)).toFixed(4);
+            document.getElementById('dyn-pos').innerText = `LAT: ${lat} | LNG: ${lng}`;
+        }, 1500);
 
-        /**
-         * SECURITY & AUTO-RELOAD (30 MINS IDLE)
-         * Authorized by: Elizer T Garingo (Cyber Sec IV)
-         */
-        document.onkeydown = function(e) {
-            if(e.keyCode == 123 || 
-              (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || 
-              (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
-                return false;
-            }
+        // Security Protocol
+        document.onkeydown = (e) => {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) return false;
         };
-
-        let idleTime = 0;
-        document.onmousemove = document.onkeypress = document.ontouchstart = () => idleTime = 0;
-        setInterval(() => {
-            idleTime++;
-            if (idleTime >= 30) window.location.reload();
-        }, 60000);
     </script>
 </body>
 </html>
