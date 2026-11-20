@@ -112,7 +112,7 @@
             font-size: 10px !important; text-shadow: 1px 1px 2px black;
         }
 
-        /* --- FLOATING APP INSTALL BUTTON --- */
+        /* --- MOVABLE FLOATING APP INSTALL BUTTON --- */
         #floating-app-btn {
             position: fixed;
             bottom: 24px;
@@ -120,34 +120,49 @@
             z-index: 9999;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             background: var(--panel-bg);
             border: 1.5px solid var(--tactical-blue);
             border-radius: 50px;
-            padding: 8px 18px 8px 10px;
+            padding: 8px 10px 8px 10px;
             color: #ffffff;
-            cursor: pointer;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.35), inset 0 0 12px rgba(0, 212, 255, 0.15);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
             animation: btnPulse 3s infinite;
         }
 
-        #floating-app-btn:hover {
-            transform: translateY(-3px) scale(1.02);
+        #floating-app-btn.dragging {
+            cursor: grabbing;
+            animation: none;
             border-color: var(--defense-green);
-            box-shadow: 0 0 28px rgba(0, 255, 102, 0.5), inset 0 0 15px rgba(0, 255, 102, 0.2);
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.55);
         }
 
-        #floating-app-btn:active {
-            transform: scale(0.97);
+        #floating-app-btn.hidden-btn {
+            display: none !important;
+        }
+
+        .fab-main-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            padding: 0 4px 0 0;
+            color: inherit;
+            cursor: inherit;
         }
 
         .fab-logo-wrap {
             position: relative;
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: rgba(0, 212, 255, 0.12);
             border: 1px solid rgba(0, 212, 255, 0.5);
@@ -155,12 +170,14 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            pointer-events: none;
         }
 
         .fab-logo-wrap img {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             object-fit: contain;
+            pointer-events: none;
         }
 
         .fab-status-dot {
@@ -179,6 +196,7 @@
             flex-direction: column;
             text-align: left;
             line-height: 1.2;
+            pointer-events: none;
         }
 
         .fab-title {
@@ -190,10 +208,73 @@
         }
 
         .fab-sub {
-            font-size: 10px;
+            font-size: 9.5px;
             color: var(--tactical-blue);
             font-family: 'Courier New', monospace;
             font-weight: bold;
+        }
+
+        .fab-hide-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.06);
+            color: #b8d8f0;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .fab-hide-btn:hover {
+            background: rgba(255, 204, 0, 0.18);
+            border-color: var(--alert-gold);
+            color: var(--alert-gold);
+        }
+
+        /* --- RESTORE CHIP WHEN HIDDEN --- */
+        #restore-app-btn {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            z-index: 9998;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(0, 12, 24, 0.85);
+            border: 1px solid rgba(0, 212, 255, 0.55);
+            color: var(--tactical-blue);
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 14px rgba(0, 212, 255, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        #restore-app-btn.visible {
+            display: flex;
+        }
+
+        #restore-app-btn:hover {
+            color: var(--defense-green);
+            border-color: var(--defense-green);
+        }
+
+        #restore-app-btn img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
         }
 
         @keyframes btnPulse {
@@ -371,7 +452,7 @@
 
         @media (max-width: 480px) {
             .terminal { left: 20px; bottom: 90px; min-width: 210px; padding: 14px; }
-            #floating-app-btn { bottom: 16px; right: 16px; padding: 7px 14px 7px 8px; }
+            #floating-app-btn { bottom: 16px; right: 16px; padding: 7px 8px; }
             .fab-title { font-size: 11px; }
         }
     </style>
@@ -407,16 +488,25 @@
             onload="launchDPPAR()">
     </iframe>
 
-    <!-- Floating App Download Suggestion Button -->
-    <button id="floating-app-btn" onclick="openInstallModal()" title="Install Automated DPPAR App on Any Device">
-        <div class="fab-logo-wrap">
-            <img src="pro9 logo.png" alt="PRO9 App Icon">
-            <span class="fab-status-dot"></span>
-        </div>
-        <div class="fab-text">
-            <span class="fab-title">Install DPPAR App</span>
-            <span class="fab-sub">ANDROID • iOS • PC • MAC</span>
-        </div>
+    <!-- Movable & Hideable Floating App Download Button -->
+    <div id="floating-app-btn" title="Drag to move • Tap to install DPPAR App">
+        <button type="button" class="fab-main-trigger" id="fab-open-trigger">
+            <div class="fab-logo-wrap">
+                <img src="pro9 logo.png" alt="PRO9 App Icon">
+                <span class="fab-status-dot"></span>
+            </div>
+            <div class="fab-text">
+                <span class="fab-title">Install DPPAR App</span>
+                <span class="fab-sub">DRAG • ANDROID • iOS • PC</span>
+            </div>
+        </button>
+        <button type="button" class="fab-hide-btn" id="fab-hide-trigger" title="Hide button">&times;</button>
+    </div>
+
+    <!-- Compact Restore Chip When Hidden -->
+    <button type="button" id="restore-app-btn" onclick="setFloatingButtonHidden(false)" title="Show DPPAR App Button">
+        <img src="pro9 logo.png" alt="">
+        <span>Show App</span>
     </button>
 
     <!-- Universal App Download / Install Modal -->
@@ -512,11 +602,108 @@
         }
 
         /* ==========================================
-           2. UNIVERSAL PWA & APP INSTALL SYSTEM
+           2. DRAG & HIDE CONTROLS FOR FLOATING BUTTON
+        ========================================== */
+        (function setupFloatingControls() {
+            const fab = document.getElementById('floating-app-btn');
+            const openTrigger = document.getElementById('fab-open-trigger');
+            const hideTrigger = document.getElementById('fab-hide-trigger');
+            const restoreBtn = document.getElementById('restore-app-btn');
+
+            let isDragging = false;
+            let movedDistance = 0;
+            let startX = 0, startY = 0;
+            let initialLeft = 0, initialTop = 0;
+
+            function setPosition(left, top) {
+                const margin = 10;
+                const rect = fab.getBoundingClientRect();
+                const maxLeft = Math.max(margin, window.innerWidth - rect.width - margin);
+                const maxTop = Math.max(margin, window.innerHeight - rect.height - margin);
+
+                const clampedLeft = Math.min(Math.max(margin, left), maxLeft);
+                const clampedTop = Math.min(Math.max(margin, top), maxTop);
+
+                fab.style.left = clampedLeft + 'px';
+                fab.style.top = clampedTop + 'px';
+                fab.style.right = 'auto';
+                fab.style.bottom = 'auto';
+            }
+
+            fab.addEventListener('pointerdown', (e) => {
+                if (e.target === hideTrigger) return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+                isDragging = true;
+                movedDistance = 0;
+                const rect = fab.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = rect.left;
+                initialTop = rect.top;
+
+                fab.classList.add('dragging');
+                fab.setPointerCapture(e.pointerId);
+            });
+
+            fab.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                movedDistance = Math.hypot(dx, dy);
+                setPosition(initialLeft + dx, initialTop + dy);
+            });
+
+            function endDrag(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                fab.classList.remove('dragging');
+                if (fab.hasPointerCapture(e.pointerId)) {
+                    fab.releasePointerCapture(e.pointerId);
+                }
+            }
+
+            fab.addEventListener('pointerup', endDrag);
+            fab.addEventListener('pointercancel', endDrag);
+
+            // Open modal only if user tapped/clicked rather than dragged
+            openTrigger.addEventListener('click', () => {
+                if (movedDistance < 6) {
+                    openInstallModal();
+                }
+            });
+
+            // Hide floating button and show small restore chip
+            hideTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setFloatingButtonHidden(true);
+            });
+
+            window.setFloatingButtonHidden = function(hidden) {
+                if (hidden) {
+                    fab.classList.add('hidden-btn');
+                    restoreBtn.classList.add('visible');
+                } else {
+                    fab.classList.remove('hidden-btn');
+                    restoreBtn.classList.remove('visible');
+                    const rect = fab.getBoundingClientRect();
+                    setPosition(rect.left, rect.top);
+                }
+            };
+
+            // Keep inside viewport when window resizes or rotates
+            window.addEventListener('resize', () => {
+                if (fab.style.left && fab.style.top) {
+                    setPosition(parseFloat(fab.style.left), parseFloat(fab.style.top));
+                }
+            });
+        })();
+
+        /* ==========================================
+           3. UNIVERSAL PWA & APP INSTALL SYSTEM
         ========================================== */
         let deferredPrompt = null;
 
-        // Generate Dynamic Web Manifest with Absolute Logo URL
         (function setupManifest() {
             const logoUrl = new URL('pro9 logo.png', window.location.href).href;
             const startUrl = window.location.href;
@@ -538,22 +725,19 @@
             document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
         })();
 
-        // Listen for Android / Chrome / Edge native install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('install-btn-label').innerText = "INSTALL APP DIRECTLY (1-CLICK)";
         });
 
-        // Hide floating button if already running inside the installed standalone app
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-            document.getElementById('floating-app-btn').style.display = 'none';
+            document.getElementById('floating-app-btn').classList.add('hidden-btn');
         }
 
         function detectDeviceInstructions() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             const box = document.getElementById('os-instructions');
-            const btn = document.getElementById('native-install-trigger');
 
             const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
             const isAndroid = /android/i.test(ua);
@@ -607,7 +791,8 @@
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    document.getElementById('floating-app-btn').style.display = 'none';
+                    document.getElementById('floating-app-btn').classList.add('hidden-btn');
+                    document.getElementById('restore-app-btn').classList.remove('visible');
                 }
                 deferredPrompt = null;
                 closeInstallModal();
