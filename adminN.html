@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ADPPARS">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 | DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</title>
+    <title>PRO9 | AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</title>
 
     <!-- Dynamic PWA Manifest for Cross-Device App Installation -->
     <link rel="manifest" id="pwa-manifest">
@@ -70,8 +70,8 @@
             text-align: center;
             color: #ffffff;
             text-transform: uppercase;
-            margin-top: 16px;
-            max-width: 720px;
+            margin-top: 14px;
+            max-width: 780px;
         }
 
         .entrance-logo {
@@ -83,18 +83,19 @@
 
         .header-main h1 {
             margin: 0;
-            font-size: 1.15rem;
-            letter-spacing: 5px;
+            font-size: 1.2rem;
+            letter-spacing: 6px;
             font-weight: 900;
             text-shadow: 0 0 15px var(--tactical-blue);
         }
 
-        .header-subtitle {
+        .header-system-title {
             margin: 8px 0 0;
             font-size: 0.72rem;
-            letter-spacing: 2px;
+            letter-spacing: 1.8px;
             color: var(--alert-gold);
-            font-weight: 700;
+            font-weight: 800;
+            line-height: 1.4;
         }
 
         .header-uplink {
@@ -351,7 +352,7 @@
         .app-modal {
             position: relative;
             width: 100%;
-            max-width: 450px;
+            max-width: 460px;
             background: var(--panel-bg);
             border: 1.5px solid var(--tactical-blue);
             border-radius: 14px;
@@ -405,7 +406,7 @@
 
         .modal-title-group h2 {
             margin: 0 0 4px 0;
-            font-size: 13.5px;
+            font-size: 13px;
             letter-spacing: 0.4px;
             color: #ffffff;
             text-transform: uppercase;
@@ -512,13 +513,13 @@
         <img src="pro9 logo.png" alt="PRO9 Logo" class="entrance-logo">
         <div class="header-main">
             <h1>POLICE REGIONAL OFFICE 9</h1>
-            <p class="header-subtitle">DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</p>
-            <p class="header-uplink">ADPPARS COMMAND TRACK &amp; VALIDATOR | UPLINK ESTABLISHED</p>
+            <p class="header-system-title">AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</p>
+            <p class="header-uplink">ADPPARS ADMIN | UPLINK ESTABLISHED</p>
         </div>
         <div class="hud-spinner"></div>
     </div>
 
-    <!-- ADPPARS Command Track / Validator Iframe -->
+    <!-- ADPPARS Admin Iframe -->
     <iframe id="secure-frame"
             src="https://script.google.com/macros/s/AKfycbwEzIx-WakUbO2mmBeh1-an3VFfiMfBz1XCa2kGg1tzfvAI_KqUhtPbd1tzP4k-JJimqg/exec"
             allow="geolocation; camera; microphone; fullscreen; autoplay; display-capture;"
@@ -534,7 +535,7 @@
             </div>
             <div class="fab-text">
                 <span class="fab-title">Install ADPPARS App</span>
-                <span class="fab-sub">DAILY ACCOUNTING • ALL DEVICES</span>
+                <span class="fab-sub">AUTOMATED ACCOUNTING • ALL DEVICES</span>
             </div>
         </button>
         <button type="button" class="fab-hide-btn" id="fab-hide-trigger" title="Hide button">&times;</button>
@@ -554,8 +555,8 @@
             <div class="modal-header">
                 <img src="pro9 logo.png" alt="PRO9 ADPPARS Logo" class="modal-app-icon">
                 <div class="modal-title-group">
-                    <h2>DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</h2>
-                    <p>[PRO9 COMMAND TRACK &amp; VALIDATOR • ALL DEVICES]</p>
+                    <h2>AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</h2>
+                    <p>[PRO9 ADMIN CONSOLE • ALL DEVICES]</p>
                     <div class="device-badges">
                         <span class="badge">Android</span>
                         <span class="badge">iPhone / iPad</span>
@@ -566,7 +567,7 @@
             </div>
 
             <div class="modal-body">
-                Install the <strong>DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</strong> app directly to your phone, tablet, or workstation for rapid full-screen accounting and validation.
+                Install the <strong>AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</strong> app directly to your phone, tablet, or workstation for rapid full-screen monitoring and validation.
 
                 <div class="os-box" id="os-instructions">
                     <!-- Populated dynamically based on user's device -->
@@ -632,7 +633,6 @@
             }, 700);
         }
 
-        // Safety fallback in case iframe onload event is delayed or skipped
         setTimeout(() => {
             if (!hasLaunched) overdriveLaunch();
         }, 5000);
@@ -741,9 +741,9 @@
             const logoUrl = new URL('pro9 logo.png', window.location.href).href;
             const startUrl = window.location.href;
             const manifestData = {
-                name: "DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)",
+                name: "AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)",
                 short_name: "ADPPARS",
-                description: "PRO9 - Daily PNP Personnel Accounting Report System Command Track & Validator",
+                description: "Police Regional Office 9 - Automated Daily PNP Personnel Accounting Report System (ADPPARS)",
                 start_url: startUrl,
                 display: "standalone",
                 background_color: "#010b1a",
