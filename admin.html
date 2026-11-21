@@ -7,15 +7,15 @@
     <meta name="theme-color" content="#010b1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="DPPAR Admin">
+    <meta name="apple-mobile-web-app-title" content="ADPPARS">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PRO9 | DPPAR COMMAND TRACK / VALIDATOR</title>
-    
+    <title>PRO9 | AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (a_DPPARS)</title>
+
     <!-- Dynamic PWA Manifest for Cross-Device App Installation -->
     <link rel="manifest" id="pwa-manifest">
-    
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+
     <style>
         :root {
             --tactical-blue: #00d4ff;
@@ -25,35 +25,55 @@
             --panel-bg: rgba(1, 14, 32, 0.94);
         }
 
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
         }
 
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: var(--bg-black); 
-            position: fixed; font-family: 'Segoe UI', sans-serif;
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--bg-black);
+            position: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         #map {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; filter: brightness(0.5) contrast(1.6) saturate(0.4) hue-rotate(185deg);
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: brightness(0.5) contrast(1.6) saturate(0.4) hue-rotate(185deg);
         }
 
         /* TACTICAL HUD */
         #hud {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10; pointer-events: none;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
             background: radial-gradient(circle, transparent 30%, rgba(1, 11, 26, 0.9) 100%);
-            transition: opacity 0.4s ease-out;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.45s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
         .header-main {
-            text-align: center; color: white; text-transform: uppercase;
-            margin-top: 20px;
+            text-align: center;
+            color: #ffffff;
+            text-transform: uppercase;
+            margin-top: 14px;
+            max-width: 780px;
         }
-        
+
         .entrance-logo {
             width: 100px;
             height: auto;
@@ -61,15 +81,48 @@
             margin-bottom: 10px;
         }
 
-        .header-main h1 { margin: 0; font-size: 1.2rem; letter-spacing: 8px; font-weight: 900; text-shadow: 0 0 15px var(--tactical-blue); }
+        .header-main h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 6px;
+            font-weight: 900;
+            text-shadow: 0 0 15px var(--tactical-blue);
+        }
+
+        .header-system-title {
+            margin: 8px 0 0;
+            font-size: 0.72rem;
+            letter-spacing: 1.8px;
+            color: var(--alert-gold);
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        .header-uplink {
+            margin: 6px 0 0;
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--tactical-blue);
+            font-family: 'Courier New', monospace;
+        }
+
+        .hud-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--tactical-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
 
         /* HIGH VISIBILITY LABELS */
         .tactical-label {
             background: rgba(0, 20, 40, 0.85) !important;
             border: 1px solid var(--tactical-blue) !important;
-            color: #fff !important;
+            color: #ffffff !important;
             font-weight: 900 !important;
-            font-family: monospace !important;
+            font-family: 'Courier New', monospace !important;
             font-size: 11px !important;
             padding: 2px 8px !important;
             border-radius: 3px !important;
@@ -77,13 +130,31 @@
             text-transform: uppercase;
         }
 
-        @keyframes nodePulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
-        .pulse-ring { border: 2px solid var(--defense-green); border-radius: 50%; animation: nodePulse 1.5s infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes nodePulse {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+
+        .pulse-ring {
+            border: 2px solid var(--defense-green);
+            border-radius: 50%;
+            animation: nodePulse 1.5s infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         #secure-frame {
-            position: absolute; width: 100%; height: 100%; border: none;
-            z-index: 100; opacity: 0; visibility: hidden;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
             transition: opacity 0.5s ease-in;
         }
 
@@ -281,12 +352,12 @@
         .app-modal {
             position: relative;
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             background: var(--panel-bg);
             border: 1.5px solid var(--tactical-blue);
             border-radius: 14px;
             padding: 26px;
-            color: #fff;
+            color: #ffffff;
             box-shadow: 0 0 50px rgba(0, 212, 255, 0.25);
         }
 
@@ -296,7 +367,7 @@
             right: 16px;
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.25);
-            color: #fff;
+            color: #ffffff;
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -335,10 +406,11 @@
 
         .modal-title-group h2 {
             margin: 0 0 4px 0;
-            font-size: 14.5px;
-            letter-spacing: 0.5px;
-            color: #fff;
+            font-size: 13px;
+            letter-spacing: 0.4px;
+            color: #ffffff;
             text-transform: uppercase;
+            line-height: 1.3;
         }
 
         .modal-title-group p {
@@ -429,6 +501,7 @@
         @media (max-width: 480px) {
             #floating-app-btn { bottom: 16px; right: 16px; padding: 7px 8px; }
             .fab-title { font-size: 11px; }
+            .header-main h1 { font-size: 0.95rem; letter-spacing: 3px; }
         }
     </style>
 </head>
@@ -440,48 +513,49 @@
         <img src="pro9 logo.png" alt="PRO9 Logo" class="entrance-logo">
         <div class="header-main">
             <h1>POLICE REGIONAL OFFICE 9</h1>
-            <p style="font-size: 0.6rem; letter-spacing: 3px; color: var(--tactical-blue); margin-top: 5px;">DPPAR ADMIN | UPLINK ESTABLISHED</p>
+            <p class="header-system-title">AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</p>
+            <p class="header-uplink">ADPPARS ADMIN | UPLINK ESTABLISHED</p>
         </div>
-        <div style="border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--tactical-blue); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px;"></div>
+        <div class="hud-spinner"></div>
     </div>
 
-    <!-- Admin Command Track / Validator Iframe -->
-    <iframe id="secure-frame" 
-            src="https://script.google.com/macros/s/AKfycbwEzIx-WakUbO2mmBeh1-an3VFfiMfBz1XCa2kGg1tzfvAI_KqUhtPbd1tzP4k-JJimqg/exec" 
+    <!-- ADPPARS Admin Iframe -->
+    <iframe id="secure-frame"
+            src="https://script.google.com/macros/s/AKfycbwEzIx-WakUbO2mmBeh1-an3VFfiMfBz1XCa2kGg1tzfvAI_KqUhtPbd1tzP4k-JJimqg/exec"
             allow="geolocation; camera; microphone; fullscreen; autoplay; display-capture;"
             onload="overdriveLaunch()">
     </iframe>
 
-    <!-- Movable & Hideable Floating Admin App Button -->
-    <div id="floating-app-btn" title="Drag to move • Tap to install DPPAR Admin App">
+    <!-- Movable & Hideable Floating ADPPARS App Button -->
+    <div id="floating-app-btn" title="Drag to move • Tap to install ADPPARS App">
         <button type="button" class="fab-main-trigger" id="fab-open-trigger">
             <div class="fab-logo-wrap">
-                <img src="pro9 logo.png" alt="PRO9 Admin Icon">
+                <img src="pro9 logo.png" alt="PRO9 ADPPARS Icon">
                 <span class="fab-status-dot"></span>
             </div>
             <div class="fab-text">
-                <span class="fab-title">Install Admin App</span>
-                <span class="fab-sub">COMMAND TRACK • ALL DEVICES</span>
+                <span class="fab-title">Install ADPPARS App</span>
+                <span class="fab-sub">AUTOMATED ACCOUNTING • ALL DEVICES</span>
             </div>
         </button>
         <button type="button" class="fab-hide-btn" id="fab-hide-trigger" title="Hide button">&times;</button>
     </div>
 
     <!-- Compact Restore Chip When Hidden -->
-    <button type="button" id="restore-app-btn" onclick="setFloatingButtonHidden(false)" title="Show DPPAR Admin App Button">
+    <button type="button" id="restore-app-btn" onclick="setFloatingButtonHidden(false)" title="Show ADPPARS App Button">
         <img src="pro9 logo.png" alt="">
-        <span>Admin App</span>
+        <span>ADPPARS App</span>
     </button>
 
     <!-- Universal App Download / Install Modal -->
     <div id="app-modal-backdrop" onclick="closeInstallModal(event)">
         <div class="app-modal" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeInstallModal()" aria-label="Close">&times;</button>
-            
+            <button type="button" class="modal-close" onclick="closeInstallModal()" aria-label="Close">&times;</button>
+
             <div class="modal-header">
-                <img src="pro9 logo.png" alt="PRO9 DPPAR Admin Logo" class="modal-app-icon">
+                <img src="pro9 logo.png" alt="PRO9 ADPPARS Logo" class="modal-app-icon">
                 <div class="modal-title-group">
-                    <h2>DPPAR Command Track &amp; Validator</h2>
+                    <h2>AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</h2>
                     <p>[PRO9 ADMIN CONSOLE • ALL DEVICES]</p>
                     <div class="device-badges">
                         <span class="badge">Android</span>
@@ -493,15 +567,15 @@
             </div>
 
             <div class="modal-body">
-                Install the <strong>PRO9 DPPAR Admin Command Track</strong> app directly to your phone, tablet, or workstation for rapid full-screen monitoring and validation.
+                Install the <strong>AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</strong> app directly to your phone, tablet, or workstation for rapid full-screen monitoring and validation.
 
                 <div class="os-box" id="os-instructions">
                     <!-- Populated dynamically based on user's device -->
                 </div>
 
-                <button id="native-install-trigger" class="primary-install-btn" onclick="triggerNativeInstall()">
+                <button type="button" id="native-install-trigger" class="primary-install-btn" onclick="triggerNativeInstall()">
                     <img src="pro9 logo.png" alt="" style="width:20px; height:20px; object-fit:contain;">
-                    <span id="install-btn-label">INSTALL ADMIN APP NOW</span>
+                    <span id="install-btn-label">INSTALL ADPPARS APP NOW</span>
                 </button>
             </div>
         </div>
@@ -512,7 +586,7 @@
     <script>
         /* ==========================================
            1. TACTICAL MAP & OVERDRIVE LAUNCH
-        ========================================== */
+           ========================================== */
         const jurisdictions = [
             { n: "SULU", p: [6.0, 121.0] },
             { n: "ISABELA", p: [6.7, 121.9] },
@@ -528,21 +602,30 @@
         jurisdictions.forEach(j => {
             L.circleMarker(j.p, { radius: 5, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1, weight: 2 }).addTo(map)
              .bindTooltip(j.n, { permanent: true, direction: 'right', offset: [12, 0], className: 'tactical-label' });
-            
+
             L.circleMarker(j.p, { radius: 15, color: '#00ff66', weight: 1, fillOpacity: 0, className: 'pulse-ring' }).addTo(map);
         });
 
+        let hasLaunched = false;
+
         function overdriveLaunch() {
+            if (hasLaunched) return;
+            hasLaunched = true;
+
             const frame = document.getElementById('secure-frame');
             const hud = document.getElementById('hud');
 
             map.flyTo([7.4, 122.3], 8, { duration: 0.6, easeLinearity: 0.1 });
 
             setTimeout(() => {
-                frame.style.visibility = "visible";
-                frame.style.opacity = "1";
-                hud.style.opacity = "0";
-                setTimeout(() => { 
+                if (frame) {
+                    frame.style.visibility = "visible";
+                    frame.style.opacity = "1";
+                }
+                if (hud) {
+                    hud.style.opacity = "0";
+                }
+                setTimeout(() => {
                     const mapEl = document.getElementById('map');
                     if (mapEl) mapEl.remove();
                     if (hud) hud.remove();
@@ -550,9 +633,13 @@
             }, 700);
         }
 
+        setTimeout(() => {
+            if (!hasLaunched) overdriveLaunch();
+        }, 5000);
+
         /* ==========================================
            2. DRAG & HIDE CONTROLS FOR FLOATING BUTTON
-        ========================================== */
+           ========================================== */
         (function setupFloatingControls() {
             const fab = document.getElementById('floating-app-btn');
             const openTrigger = document.getElementById('fab-open-trigger');
@@ -580,7 +667,7 @@
             }
 
             fab.addEventListener('pointerdown', (e) => {
-                if (e.target === hideTrigger) return;
+                if (e.target === hideTrigger || hideTrigger.contains(e.target)) return;
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
 
                 isDragging = true;
@@ -647,16 +734,16 @@
 
         /* ==========================================
            3. UNIVERSAL PWA & APP INSTALL SYSTEM
-        ========================================== */
+           ========================================== */
         let deferredPrompt = null;
 
         (function setupManifest() {
             const logoUrl = new URL('pro9 logo.png', window.location.href).href;
             const startUrl = window.location.href;
             const manifestData = {
-                name: "PRO9 DPPAR Command Track / Validator",
-                short_name: "DPPAR Admin",
-                description: "Police Regional Office 9 - Automated Daily PNP Personnel Accounting Report Admin Console",
+                name: "AUTOMATED DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)",
+                short_name: "ADPPARS",
+                description: "Police Regional Office 9 - Automated Daily PNP Personnel Accounting Report System (ADPPARS)",
                 start_url: startUrl,
                 display: "standalone",
                 background_color: "#010b1a",
@@ -674,7 +761,7 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            document.getElementById('install-btn-label').innerText = "INSTALL ADMIN APP (1-CLICK)";
+            document.getElementById('install-btn-label').innerText = "INSTALL ADPPARS APP (1-CLICK)";
         });
 
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
@@ -694,7 +781,7 @@
                     <ol>
                         <li>Tap the <strong>Share</strong> icon <span style="color:#00d4ff;">[↑]</span> in Safari's toolbar.</li>
                         <li>Scroll down and tap <strong>"Add to Home Screen"</strong>.</li>
-                        <li>Tap <strong>"Add"</strong> to install the <strong>DPPAR Admin</strong> icon on your home screen.</li>
+                        <li>Tap <strong>"Add"</strong> to install the <strong>ADPPARS</strong> icon on your home screen.</li>
                     </ol>
                 `;
                 document.getElementById('install-btn-label').innerText = "GOT IT — FOLLOW STEPS ABOVE";
@@ -702,17 +789,17 @@
                 box.innerHTML = `
                     <strong>Detected Device: Android Mobile / Tablet</strong>
                     <ol>
-                        <li>Tap <strong>"Install Admin App Now"</strong> below (or open browser <strong>⋮ Menu</strong>).</li>
+                        <li>Tap <strong>"Install ADPPARS App Now"</strong> below (or open browser <strong>⋮ Menu</strong>).</li>
                         <li>Choose <strong>"Install App"</strong> or <strong>"Add to Home screen"</strong>.</li>
-                        <li>Confirm to launch <strong>DPPAR Admin</strong> as a dedicated command app.</li>
+                        <li>Confirm to launch <strong>ADPPARS</strong> as a dedicated command app.</li>
                     </ol>
                 `;
             } else {
                 box.innerHTML = `
                     <strong>Detected Device: Desktop Command Workstation (Windows / macOS)</strong>
                     <ol>
-                        <li>Click <strong>"Install Admin App Now"</strong> below, or click the <strong>Install Icon</strong> in your address bar.</li>
-                        <li>Confirm to pin <strong>DPPAR Admin</strong> to your desktop/taskbar for instant access.</li>
+                        <li>Click <strong>"Install ADPPARS App Now"</strong> below, or click the <strong>Install Icon</strong> in your address bar.</li>
+                        <li>Confirm to pin <strong>ADPPARS</strong> to your desktop/taskbar for instant access.</li>
                     </ol>
                 `;
             }
@@ -749,16 +836,20 @@
 
         /* ==========================================
            4. SECURITY & IDLE AUTO-RELOAD
-        ========================================== */
+           ========================================== */
         document.onkeydown = function(e) {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83))) {
+            if (
+                e.keyCode === 123 ||
+                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) ||
+                (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83))
+            ) {
                 return false;
             }
         };
 
         let idleTime = 0;
-        const reset = () => idleTime = 0;
-        ['mousemove', 'keypress', 'touchstart'].forEach(evt => window.addEventListener(evt, reset));
+        const resetIdle = () => { idleTime = 0; };
+        ['mousemove', 'keypress', 'touchstart'].forEach(evt => window.addEventListener(evt, resetIdle));
 
         setInterval(() => {
             idleTime++;
