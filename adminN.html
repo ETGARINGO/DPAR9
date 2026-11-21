@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="pro9 logo.png">
+    <link rel="apple-touch-icon" href="pro9 logo.png">
+    <meta name="theme-color" content="#010b1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ADPPARS">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PRO9 | DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</title>
+
+    <!-- Dynamic PWA Manifest for Cross-Device App Installation -->
+    <link rel="manifest" id="pwa-manifest">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --tactical-blue: #00d4ff;
+            --defense-green: #00ff66;
+            --alert-gold: #ffcc00;
+            --bg-black: #010b1a;
+            --panel-bg: rgba(1, 14, 32, 0.94);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--bg-black);
+            position: fixed;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #map {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: brightness(0.5) contrast(1.6) saturate(0.4) hue-rotate(185deg);
+        }
+
+        /* TACTICAL HUD */
+        #hud {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 30%, rgba(1, 11, 26, 0.9) 100%);
+            transition: opacity 0.45s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .header-main {
+            text-align: center;
+            color: #ffffff;
+            text-transform: uppercase;
+            margin-top: 16px;
+            max-width: 720px;
+        }
+
+        .entrance-logo {
+            width: 100px;
+            height: auto;
+            filter: drop-shadow(0 0 15px var(--tactical-blue));
+            margin-bottom: 10px;
+        }
+
+        .header-main h1 {
+            margin: 0;
+            font-size: 1.15rem;
+            letter-spacing: 5px;
+            font-weight: 900;
+            text-shadow: 0 0 15px var(--tactical-blue);
+        }
+
+        .header-subtitle {
+            margin: 8px 0 0;
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            color: var(--alert-gold);
+            font-weight: 700;
+        }
+
+        .header-uplink {
+            margin: 6px 0 0;
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--tactical-blue);
+            font-family: 'Courier New', monospace;
+        }
+
+        .hud-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--tactical-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+
+        /* HIGH VISIBILITY LABELS */
+        .tactical-label {
+            background: rgba(0, 20, 40, 0.85) !important;
+            border: 1px solid var(--tactical-blue) !important;
+            color: #ffffff !important;
+            font-weight: 900 !important;
+            font-family: 'Courier New', monospace !important;
+            font-size: 11px !important;
+            padding: 2px 8px !important;
+            border-radius: 3px !important;
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        @keyframes nodePulse {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+
+        .pulse-ring {
+            border: 2px solid var(--defense-green);
+            border-radius: 50%;
+            animation: nodePulse 1.5s infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #secure-frame {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in;
+        }
+
+        /* --- MOVABLE FLOATING ADMIN APP BUTTON --- */
+        #floating-app-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel-bg);
+            border: 1.5px solid var(--tactical-blue);
+            border-radius: 50px;
+            padding: 8px 10px;
+            color: #ffffff;
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.35), inset 0 0 12px rgba(0, 212, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+            animation: btnPulse 3s infinite;
+        }
+
+        #floating-app-btn.dragging {
+            cursor: grabbing;
+            animation: none;
+            border-color: var(--defense-green);
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.55);
+        }
+
+        #floating-app-btn.hidden-btn {
+            display: none !important;
+        }
+
+        .fab-main-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            padding: 0 4px 0 0;
+            color: inherit;
+            cursor: inherit;
+        }
+
+        .fab-logo-wrap {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.12);
+            border: 1px solid rgba(0, 212, 255, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            pointer-events: none;
+        }
+
+        .fab-logo-wrap img {
+            width: 26px;
+            height: 26px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .fab-status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--alert-gold);
+            border: 2px solid var(--bg-black);
+            border-radius: 50%;
+        }
+
+        .fab-text {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+            pointer-events: none;
+        }
+
+        .fab-title {
+            font-size: 11.5px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .fab-sub {
+            font-size: 9.5px;
+            color: var(--alert-gold);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .fab-hide-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.06);
+            color: #b8d8f0;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .fab-hide-btn:hover {
+            background: rgba(255, 204, 0, 0.18);
+            border-color: var(--alert-gold);
+            color: var(--alert-gold);
+        }
+
+        /* --- RESTORE CHIP WHEN HIDDEN --- */
+        #restore-app-btn {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            z-index: 9998;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(1, 14, 32, 0.88);
+            border: 1px solid rgba(0, 212, 255, 0.55);
+            color: var(--tactical-blue);
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 14px rgba(0, 212, 255, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        #restore-app-btn.visible {
+            display: flex;
+        }
+
+        #restore-app-btn:hover {
+            color: var(--defense-green);
+            border-color: var(--defense-green);
+        }
+
+        #restore-app-btn img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+        }
+
+        @keyframes btnPulse {
+            0%, 100% { box-shadow: 0 0 18px rgba(0, 212, 255, 0.3); }
+            50% { box-shadow: 0 0 28px rgba(0, 212, 255, 0.65); }
+        }
+
+        /* --- DOWNLOAD / INSTALL MODAL --- */
+        #app-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(1, 11, 26, 0.84);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #app-modal-backdrop.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .app-modal {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            background: var(--panel-bg);
+            border: 1.5px solid var(--tactical-blue);
+            border-radius: 14px;
+            padding: 26px;
+            color: #ffffff;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.25);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            border-color: var(--alert-gold);
+            color: var(--alert-gold);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .modal-app-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1.5px solid var(--tactical-blue);
+            padding: 8px;
+            object-fit: contain;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            flex-shrink: 0;
+        }
+
+        .modal-title-group h2 {
+            margin: 0 0 4px 0;
+            font-size: 13.5px;
+            letter-spacing: 0.4px;
+            color: #ffffff;
+            text-transform: uppercase;
+            line-height: 1.3;
+        }
+
+        .modal-title-group p {
+            margin: 0;
+            font-size: 11px;
+            color: var(--alert-gold);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .device-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(0, 212, 255, 0.12);
+            border: 1px solid rgba(0, 212, 255, 0.35);
+            color: var(--tactical-blue);
+            font-weight: 600;
+        }
+
+        .modal-body {
+            margin-top: 18px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #d0e4f5;
+        }
+
+        .os-box {
+            background: rgba(0, 0, 0, 0.45);
+            border-left: 3px solid var(--alert-gold);
+            padding: 12px 14px;
+            border-radius: 6px;
+            margin: 14px 0;
+            font-size: 12px;
+        }
+
+        .os-box strong {
+            color: var(--alert-gold);
+            display: block;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.8px;
+        }
+
+        .os-box ol {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .os-box li {
+            margin-bottom: 4px;
+        }
+
+        .primary-install-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 13px;
+            background: linear-gradient(90deg, #0088cc, #00d4ff);
+            border: none;
+            border-radius: 8px;
+            color: #010b1a;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            transition: 0.2s;
+        }
+
+        .primary-install-btn:hover {
+            background: linear-gradient(90deg, #00cc52, #00ff66);
+            box-shadow: 0 0 25px rgba(0, 255, 102, 0.5);
+        }
+
+        @media (max-width: 480px) {
+            #floating-app-btn { bottom: 16px; right: 16px; padding: 7px 8px; }
+            .fab-title { font-size: 11px; }
+            .header-main h1 { font-size: 0.95rem; letter-spacing: 3px; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="map"></div>
+
+    <div id="hud">
+        <img src="pro9 logo.png" alt="PRO9 Logo" class="entrance-logo">
+        <div class="header-main">
+            <h1>POLICE REGIONAL OFFICE 9</h1>
+            <p class="header-subtitle">DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</p>
+            <p class="header-uplink">ADPPARS COMMAND TRACK &amp; VALIDATOR | UPLINK ESTABLISHED</p>
+        </div>
+        <div class="hud-spinner"></div>
+    </div>
+
+    <!-- ADPPARS Command Track / Validator Iframe -->
+    <iframe id="secure-frame"
+            src="https://script.google.com/macros/s/AKfycbwEzIx-WakUbO2mmBeh1-an3VFfiMfBz1XCa2kGg1tzfvAI_KqUhtPbd1tzP4k-JJimqg/exec"
+            allow="geolocation; camera; microphone; fullscreen; autoplay; display-capture;"
+            onload="overdriveLaunch()">
+    </iframe>
+
+    <!-- Movable & Hideable Floating ADPPARS App Button -->
+    <div id="floating-app-btn" title="Drag to move • Tap to install ADPPARS App">
+        <button type="button" class="fab-main-trigger" id="fab-open-trigger">
+            <div class="fab-logo-wrap">
+                <img src="pro9 logo.png" alt="PRO9 ADPPARS Icon">
+                <span class="fab-status-dot"></span>
+            </div>
+            <div class="fab-text">
+                <span class="fab-title">Install ADPPARS App</span>
+                <span class="fab-sub">DAILY ACCOUNTING • ALL DEVICES</span>
+            </div>
+        </button>
+        <button type="button" class="fab-hide-btn" id="fab-hide-trigger" title="Hide button">&times;</button>
+    </div>
+
+    <!-- Compact Restore Chip When Hidden -->
+    <button type="button" id="restore-app-btn" onclick="setFloatingButtonHidden(false)" title="Show ADPPARS App Button">
+        <img src="pro9 logo.png" alt="">
+        <span>ADPPARS App</span>
+    </button>
+
+    <!-- Universal App Download / Install Modal -->
+    <div id="app-modal-backdrop" onclick="closeInstallModal(event)">
+        <div class="app-modal" onclick="event.stopPropagation()">
+            <button type="button" class="modal-close" onclick="closeInstallModal()" aria-label="Close">&times;</button>
+
+            <div class="modal-header">
+                <img src="pro9 logo.png" alt="PRO9 ADPPARS Logo" class="modal-app-icon">
+                <div class="modal-title-group">
+                    <h2>DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</h2>
+                    <p>[PRO9 COMMAND TRACK &amp; VALIDATOR • ALL DEVICES]</p>
+                    <div class="device-badges">
+                        <span class="badge">Android</span>
+                        <span class="badge">iPhone / iPad</span>
+                        <span class="badge">Windows</span>
+                        <span class="badge">macOS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                Install the <strong>DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)</strong> app directly to your phone, tablet, or workstation for rapid full-screen accounting and validation.
+
+                <div class="os-box" id="os-instructions">
+                    <!-- Populated dynamically based on user's device -->
+                </div>
+
+                <button type="button" id="native-install-trigger" class="primary-install-btn" onclick="triggerNativeInstall()">
+                    <img src="pro9 logo.png" alt="" style="width:20px; height:20px; object-fit:contain;">
+                    <span id="install-btn-label">INSTALL ADPPARS APP NOW</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        /* ==========================================
+           1. TACTICAL MAP & OVERDRIVE LAUNCH
+           ========================================== */
+        const jurisdictions = [
+            { n: "SULU", p: [6.0, 121.0] },
+            { n: "ISABELA", p: [6.7, 121.9] },
+            { n: "ZAMBO CITY", p: [6.92, 122.07] },
+            { n: "SIBUGAY", p: [7.7, 122.5] },
+            { n: "ZAMBO SUR", p: [7.8, 123.3] },
+            { n: "ZAMBO NORTE", p: [8.2, 123.0] }
+        ];
+
+        const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([6.92, 122.07], 14);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+        jurisdictions.forEach(j => {
+            L.circleMarker(j.p, { radius: 5, color: '#fff', fillColor: '#00d4ff', fillOpacity: 1, weight: 2 }).addTo(map)
+             .bindTooltip(j.n, { permanent: true, direction: 'right', offset: [12, 0], className: 'tactical-label' });
+
+            L.circleMarker(j.p, { radius: 15, color: '#00ff66', weight: 1, fillOpacity: 0, className: 'pulse-ring' }).addTo(map);
+        });
+
+        let hasLaunched = false;
+
+        function overdriveLaunch() {
+            if (hasLaunched) return;
+            hasLaunched = true;
+
+            const frame = document.getElementById('secure-frame');
+            const hud = document.getElementById('hud');
+
+            map.flyTo([7.4, 122.3], 8, { duration: 0.6, easeLinearity: 0.1 });
+
+            setTimeout(() => {
+                if (frame) {
+                    frame.style.visibility = "visible";
+                    frame.style.opacity = "1";
+                }
+                if (hud) {
+                    hud.style.opacity = "0";
+                }
+                setTimeout(() => {
+                    const mapEl = document.getElementById('map');
+                    if (mapEl) mapEl.remove();
+                    if (hud) hud.remove();
+                }, 800);
+            }, 700);
+        }
+
+        // Safety fallback in case iframe onload event is delayed or skipped
+        setTimeout(() => {
+            if (!hasLaunched) overdriveLaunch();
+        }, 5000);
+
+        /* ==========================================
+           2. DRAG & HIDE CONTROLS FOR FLOATING BUTTON
+           ========================================== */
+        (function setupFloatingControls() {
+            const fab = document.getElementById('floating-app-btn');
+            const openTrigger = document.getElementById('fab-open-trigger');
+            const hideTrigger = document.getElementById('fab-hide-trigger');
+            const restoreBtn = document.getElementById('restore-app-btn');
+
+            let isDragging = false;
+            let movedDistance = 0;
+            let startX = 0, startY = 0;
+            let initialLeft = 0, initialTop = 0;
+
+            function setPosition(left, top) {
+                const margin = 10;
+                const rect = fab.getBoundingClientRect();
+                const maxLeft = Math.max(margin, window.innerWidth - rect.width - margin);
+                const maxTop = Math.max(margin, window.innerHeight - rect.height - margin);
+
+                const clampedLeft = Math.min(Math.max(margin, left), maxLeft);
+                const clampedTop = Math.min(Math.max(margin, top), maxTop);
+
+                fab.style.left = clampedLeft + 'px';
+                fab.style.top = clampedTop + 'px';
+                fab.style.right = 'auto';
+                fab.style.bottom = 'auto';
+            }
+
+            fab.addEventListener('pointerdown', (e) => {
+                if (e.target === hideTrigger || hideTrigger.contains(e.target)) return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+                isDragging = true;
+                movedDistance = 0;
+                const rect = fab.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = rect.left;
+                initialTop = rect.top;
+
+                fab.classList.add('dragging');
+                fab.setPointerCapture(e.pointerId);
+            });
+
+            fab.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                movedDistance = Math.hypot(dx, dy);
+                setPosition(initialLeft + dx, initialTop + dy);
+            });
+
+            function endDrag(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                fab.classList.remove('dragging');
+                if (fab.hasPointerCapture(e.pointerId)) {
+                    fab.releasePointerCapture(e.pointerId);
+                }
+            }
+
+            fab.addEventListener('pointerup', endDrag);
+            fab.addEventListener('pointercancel', endDrag);
+
+            openTrigger.addEventListener('click', () => {
+                if (movedDistance < 6) {
+                    openInstallModal();
+                }
+            });
+
+            hideTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setFloatingButtonHidden(true);
+            });
+
+            window.setFloatingButtonHidden = function(hidden) {
+                if (hidden) {
+                    fab.classList.add('hidden-btn');
+                    restoreBtn.classList.add('visible');
+                } else {
+                    fab.classList.remove('hidden-btn');
+                    restoreBtn.classList.remove('visible');
+                    const rect = fab.getBoundingClientRect();
+                    setPosition(rect.left, rect.top);
+                }
+            };
+
+            window.addEventListener('resize', () => {
+                if (fab.style.left && fab.style.top) {
+                    setPosition(parseFloat(fab.style.left), parseFloat(fab.style.top));
+                }
+            });
+        })();
+
+        /* ==========================================
+           3. UNIVERSAL PWA & APP INSTALL SYSTEM
+           ========================================== */
+        let deferredPrompt = null;
+
+        (function setupManifest() {
+            const logoUrl = new URL('pro9 logo.png', window.location.href).href;
+            const startUrl = window.location.href;
+            const manifestData = {
+                name: "DAILY PNP PERSONNEL ACCOUNTING REPORT SYSTEM (ADPPARS)",
+                short_name: "ADPPARS",
+                description: "PRO9 - Daily PNP Personnel Accounting Report System Command Track & Validator",
+                start_url: startUrl,
+                display: "standalone",
+                background_color: "#010b1a",
+                theme_color: "#010b1a",
+                orientation: "any",
+                icons: [
+                    { src: logoUrl, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+                    { src: logoUrl, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+                ]
+            };
+            const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+            document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
+        })();
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-btn-label').innerText = "INSTALL ADPPARS APP (1-CLICK)";
+        });
+
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            document.getElementById('floating-app-btn').classList.add('hidden-btn');
+        }
+
+        function detectDeviceInstructions() {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const box = document.getElementById('os-instructions');
+
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+            const isAndroid = /android/i.test(ua);
+
+            if (isIOS) {
+                box.innerHTML = `
+                    <strong>Detected Device: Apple iOS (iPhone / iPad)</strong>
+                    <ol>
+                        <li>Tap the <strong>Share</strong> icon <span style="color:#00d4ff;">[↑]</span> in Safari's toolbar.</li>
+                        <li>Scroll down and tap <strong>"Add to Home Screen"</strong>.</li>
+                        <li>Tap <strong>"Add"</strong> to install the <strong>ADPPARS</strong> icon on your home screen.</li>
+                    </ol>
+                `;
+                document.getElementById('install-btn-label').innerText = "GOT IT — FOLLOW STEPS ABOVE";
+            } else if (isAndroid) {
+                box.innerHTML = `
+                    <strong>Detected Device: Android Mobile / Tablet</strong>
+                    <ol>
+                        <li>Tap <strong>"Install ADPPARS App Now"</strong> below (or open browser <strong>⋮ Menu</strong>).</li>
+                        <li>Choose <strong>"Install App"</strong> or <strong>"Add to Home screen"</strong>.</li>
+                        <li>Confirm to launch <strong>ADPPARS</strong> as a dedicated command app.</li>
+                    </ol>
+                `;
+            } else {
+                box.innerHTML = `
+                    <strong>Detected Device: Desktop Command Workstation (Windows / macOS)</strong>
+                    <ol>
+                        <li>Click <strong>"Install ADPPARS App Now"</strong> below, or click the <strong>Install Icon</strong> in your address bar.</li>
+                        <li>Confirm to pin <strong>ADPPARS</strong> to your desktop/taskbar for instant access.</li>
+                    </ol>
+                `;
+            }
+        }
+
+        function openInstallModal() {
+            detectDeviceInstructions();
+            const modal = document.getElementById('app-modal-backdrop');
+            modal.style.display = 'flex';
+            requestAnimationFrame(() => modal.classList.add('active'));
+        }
+
+        function closeInstallModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            const modal = document.getElementById('app-modal-backdrop');
+            modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        async function triggerNativeInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('floating-app-btn').classList.add('hidden-btn');
+                    document.getElementById('restore-app-btn').classList.remove('visible');
+                }
+                deferredPrompt = null;
+                closeInstallModal();
+            } else {
+                closeInstallModal();
+            }
+        }
+
+        /* ==========================================
+           4. SECURITY & IDLE AUTO-RELOAD
+           ========================================== */
+        document.onkeydown = function(e) {
+            if (
+                e.keyCode === 123 ||
+                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) ||
+                (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83))
+            ) {
+                return false;
+            }
+        };
+
+        let idleTime = 0;
+        const resetIdle = () => { idleTime = 0; };
+        ['mousemove', 'keypress', 'touchstart'].forEach(evt => window.addEventListener(evt, resetIdle));
+
+        setInterval(() => {
+            idleTime++;
+            if (idleTime >= 30) window.location.reload();
+        }, 60000);
+    </script>
+</body>
+</html>
